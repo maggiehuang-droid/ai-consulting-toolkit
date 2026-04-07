@@ -256,9 +256,9 @@
 
 <script>
     // API 金鑰由執行環境提供，保留為空字串
-    const apiKey = "AIzaSyAZy4ukbRYLN5QI0pxiUda6CMXEaU3kx2s"; 
+     
     // 更新為最新的模型以提高 JSON 輸出的穩定性
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+    const apiUrl = "/api/gemini?model=gemini-2.0-flash";
 
     // 強化版 JSON 擷取：解決 Unexpected end of input 問題
     function safeExtractJSON(text) {

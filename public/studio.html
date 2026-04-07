@@ -284,8 +284,8 @@
 3. 文字渲染等級：印刷級清晰度，嚴禁簡體。
 4. 輸出 JSON 格式：{ "matrix": [ { "title": "視角名稱", "description": "中文說明", "prompt": "EN PROMPT" } ] }\`;
 
-            const apiKey = "AIzaSyAZy4ukbRYLN5QI0pxiUda6CMXEaU3kx2s"; 
-            const apiUrl = \`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=\${apiKey}\`;
+             
+            const apiUrl = "/api/gemini?model=gemini-2.0-flash";
 
             try {
                 let imageData = "";

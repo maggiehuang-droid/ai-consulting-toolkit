@@ -256,9 +256,9 @@
 
 <script>
     // 自動帶入環境 API Key
-    const apiKey = "AIzaSyAZy4ukbRYLN5QI0pxiUda6CMXEaU3kx2s"; 
+     
     const model = "gemini-2.0-flash";
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+    const apiUrl = `/api/gemini?model=${model}`;
 
     const UI = {
         btn: document.getElementById('btn-process'),
