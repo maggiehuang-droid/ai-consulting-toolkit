@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>虛擬攝影棚 | 漸強實驗室 Crescendo lab</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Outfit, JetBrains Mono, Noto Sans TC -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Noto+Sans+TC:wght@300;400;500;600;700;900&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        crescendo: {
+                            blue: '#4586F0',
+                            tech: '#1F49A3',
+                            light: '#B5D1FE',
+                        },
+                        cloud: { white: '#F6F8F9' },
+                        data: { black: '#222A36' },
+                        modern: { gray: '#36393D' }
+                    },
+                    fontFamily: {
+                        sans: ['Noto Sans TC', 'sans-serif'],
+                        outfit: ['Outfit', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #F6F8F9; color: #222A36; font-family: 'Noto Sans TC', sans-serif; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #B5D1FE; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #4586F0; }
+
+        .glass-card {
+            background: white;
+            border: 1px solid rgba(181, 209, 254, 0.3);
+            box-shadow: 0 12px 32px -12px rgba(34, 42, 54, 0.08); /* 更柔和的陰影 */
+        }
+        .step-badge {
+            background: linear-gradient(135deg, #4586F0 0%, #1F49A3 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .spinner {
+            border: 4px solid rgba(69, 134, 240, 0.1);
+            border-left-color: #4586F0;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        
+        .prompt-block {
+            border-left: 4px solid #4586F0;
+            background: #ffffff;
+            padding: 1.5rem;
+            border-radius: 0 16px 16px 0;
+            transition: transform 0.2s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            border-top: 1px solid #f1f5f9;
+            border-right: 1px solid #f1f5f9;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .prompt-block:hover { transform: translateX(4px); box-shadow: 0 6px 16px rgba(0,0,0,0.06); }
+
+        .preset-btn {
+            padding: 0.35rem 0.85rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            border-radius: 9999px;
+            border: 1px solid #e2e8f0;
+            background: white;
+            color: #475569;
+            transition: all 0.2s;
+        }
+        .preset-btn:hover { border-color: #4586F0; color: #4586F0; background: #f0f7ff; }
+        
+        #image-preview-container img {
+            max-height: 220px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <!-- Header -->
+    <header class="flex flex-col sm:flex-row sm:items-center justify-between mb-10 pb-6 border-b border-gray-200/60 gap-4">
+        <div class="flex items-center space-x-4 sm:space-x-5">
+            <div class="w-16 h-16 sm:w-20 sm:h-20 bg-white rounded-2xl shadow-sm border border-gray-100 flex-shrink-0 flex items-center justify-center overflow-hidden">
+                <img src="https://i.ibb.co/Sk6GNH2/cam.png" alt="Logo" class="w-full h-full object-contain scale-[1.2] drop-shadow-sm">
+            </div>
+            <div>
+                <h1 class="text-2xl sm:text-3xl font-bold font-outfit text-data-black tracking-tight">AI Virtual <span class="text-crescendo-blue">Studio</span></h1>
+                <p class="text-sm font-medium text-modern-gray mt-1.5">漸強實驗室 Crescendo lab - 商業產圖控制矩陣</p>
+            </div>
+        </div>
+        <a href="#" onclick="window.close(); return false;" class="text-sm text-modern-gray hover:text-crescendo-blue font-bold font-outfit flex items-center transition-colors bg-white px-4 py-2.5 rounded-xl border border-gray-200 shadow-sm hover:shadow">
+            <i class="fas fa-arrow-left mr-2"></i> BACK TO TOOLKIT
+        </a>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10">
+        <!-- 左側面板 -->
+        <div class="lg:col-span-6 space-y-8">
+            <!-- STEP 1: 素材上傳 -->
+            <div class="glass-card rounded-2xl p-6 sm:p-8 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-1.5 h-full bg-crescendo-blue"></div>
+                <h2 class="text-xl font-bold mb-6 flex items-center text-data-black uppercase tracking-wide">
+                    <span class="step-badge text-2xl mr-3"><i class="fas fa-camera"></i></span>
+                    <span class="font-outfit mr-2 text-crescendo-blue">Step 1</span> 上傳產品原圖
+                </h2>
+                <div class="space-y-4">
+                    <label id="drop-zone" class="flex flex-col items-center justify-center w-full h-44 border-2 border-dashed border-crescendo-light/60 rounded-2xl cursor-pointer bg-blue-50/30 hover:bg-blue-50/80 transition-all group">
+                        <div class="text-center text-gray-500 group-hover:text-crescendo-blue transition-colors">
+                            <i class="fas fa-cloud-upload-alt text-4xl mb-3"></i>
+                            <p class="font-semibold text-sm mb-1">點擊或拖曳圖片</p>
+                            <p class="text-xs opacity-70">支援 JPG / PNG，將自動執行多模態辨識</p>
+                        </div>
+                        <input id="product-image" type="file" class="hidden" accept="image/*" />
+                    </label>
+                    <div id="image-preview-container" class="hidden flex justify-center p-4 border border-gray-100 rounded-2xl bg-gray-50/50 relative group">
+                        <!-- Preview Image -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 2: 主體細節 -->
+            <div class="glass-card rounded-2xl p-6 sm:p-8 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-1.5 h-full bg-crescendo-tech"></div>
+                <h2 class="text-xl font-bold mb-6 flex items-center text-data-black uppercase tracking-wide">
+                    <span class="step-badge text-2xl mr-3"><i class="fas fa-fingerprint"></i></span>
+                    <span class="font-outfit mr-2 text-crescendo-tech">Step 2</span> 主體與材質定義
+                </h2>
+                <textarea id="subject-detail" rows="2" class="w-full rounded-xl border-gray-200 shadow-sm focus:border-crescendo-blue focus:ring focus:ring-crescendo-light/50 bg-white p-4 text-sm transition-all" placeholder="例如：霧面陶瓷質感、玫瑰金髮絲紋金屬、透光玻璃..."></textarea>
+            </div>
+
+            <!-- STEP 3: 環境與渲染配置 -->
+            <div class="glass-card rounded-2xl p-6 sm:p-8 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-1.5 h-full bg-data-black"></div>
+                <h2 class="text-xl font-bold mb-6 flex items-center text-data-black uppercase tracking-wide">
+                    <span class="step-badge text-2xl mr-3"><i class="fas fa-sliders-h"></i></span>
+                    <span class="font-outfit mr-2 text-data-black">Step 3</span> 渲染協議配置
+                </h2>
+                <div class="space-y-6">
+                    <div>
+                        <div class="flex justify-between items-end mb-2.5">
+                            <label class="text-sm font-semibold text-gray-700">場景環境 (Environment)</label>
+                            <div class="flex gap-2">
+                                <button type="button" class="preset-btn" onclick="setField('env', 'minimalist pure white background, soft shadows')">純白</button>
+                                <button type="button" class="preset-btn" onclick="setField('env', 'modern clean cafe, blurred morning light background')">生活</button>
+                                <button type="button" class="preset-btn" onclick="setField('env', 'luxury showroom marble podium, premium atmosphere')">奢華</button>
+                            </div>
+                        </div>
+                        <input type="text" id="env-input" class="w-full rounded-xl border-gray-200 shadow-sm bg-white p-3.5 text-sm outline-none focus:border-crescendo-blue focus:ring focus:ring-crescendo-light/50 transition-all" placeholder="輸入場景描述...">
+                    </div>
+                    <div>
+                        <div class="flex justify-between items-end mb-2.5">
+                            <label class="text-sm font-semibold text-gray-700">燈光與渲染 (Lighting)</label>
+                            <div class="flex gap-2">
+                                <button type="button" class="preset-btn" onclick="setField('light', 'studio soft lighting, 4k high fidelity, 8k, photorealistic')">柔光</button>
+                                <button type="button" class="preset-btn" onclick="setField('light', 'dramatic side lighting, sharp textures, luxury lighting')">側光</button>
+                            </div>
+                        </div>
+                        <input type="text" id="light-input" class="w-full rounded-xl border-gray-200 shadow-sm bg-white p-3.5 text-sm outline-none focus:border-crescendo-blue focus:ring focus:ring-crescendo-light/50 transition-all" placeholder="輸入燈光細節...">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2.5">負向禁令 (Negative Prompt)</label>
+                        <input type="text" id="neg-prompt" class="w-full rounded-xl border-gray-200 shadow-sm bg-gray-50 p-3.5 font-mono text-xs text-gray-500 outline-none focus:border-crescendo-blue focus:ring focus:ring-crescendo-light/50 transition-all" value="--no text, dimensions, grid, watermark, low quality, blurry, simplified chinese, gibberish">
+                    </div>
+                </div>
+            </div>
+
+            <button id="generate-btn" class="w-full bg-crescendo-blue hover:bg-crescendo-tech text-white font-bold font-outfit py-4 px-8 rounded-2xl transition-all transform hover:-translate-y-1 shadow-lg hover:shadow-xl flex justify-center items-center text-lg mt-4">
+                <i class="fas fa-bolt mr-2"></i> GENERATE HIGH-RES MATRIX
+            </button>
+            <p id="error-msg" class="text-red-500 text-center font-bold hidden mt-3"></p>
+        </div>
+
+        <!-- 右側面板 -->
+        <div class="lg:col-span-6">
+            <div class="glass-card rounded-2xl h-full min-h-[600px] flex flex-col shadow-lg sticky top-8" style="max-height: calc(100vh - 4rem);">
+                <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-white rounded-t-2xl">
+                    <h3 class="font-bold text-data-black font-outfit flex items-center text-lg tracking-tight">
+                        <i class="fas fa-microchip text-crescendo-blue mr-2.5"></i> PROMPT MATRIX
+                    </h3>
+                    <div class="text-[10px] font-bold bg-red-50 px-3 py-1.5 rounded-full text-red-600 border border-red-100 flex items-center shadow-sm">
+                        <i class="fas fa-shield-alt mr-1.5"></i> HIGH-RES CONFIG ACTIVE
+                    </div>
+                </div>
+
+                <div class="p-6 sm:p-8 flex-grow overflow-y-auto bg-gray-50/30 rounded-b-2xl">
+                    <!-- Loading -->
+                    <div id="loading" class="hidden flex flex-col items-center justify-center h-full py-20">
+                        <div class="spinner mb-6"></div>
+                        <p class="text-crescendo-tech font-bold font-outfit animate-pulse text-lg">RECONSTRUCTING BRICKS...</p>
+                        <p class="text-sm text-modern-gray mt-3 text-center leading-relaxed">執行語意級圖像重構中<br>自動校正繁體中文筆畫邏輯...</p>
+                    </div>
+
+                    <!-- Init -->
+                    <div id="init-state" class="flex flex-col items-center justify-center h-full py-20 text-center">
+                        <img src="https://i.ibb.co/Sk6GNH2/cam.png" alt="Cam" class="w-32 h-32 object-contain opacity-20 grayscale mb-6 transform hover:scale-105 transition-transform duration-300">
+                        <h4 class="text-data-black font-bold mb-3 text-xl">等待攝影棚指令</h4>
+                        <p class="text-sm text-modern-gray leading-relaxed max-w-xs">上傳圖片後，系統將配置：<br><strong>上下文感知 OCR + 4K 廣色域 + 印刷級渲染</strong></p>
+                    </div>
+
+                    <!-- Result -->
+                    <div id="result-content" class="hidden flex-col space-y-6">
+                        <div class="p-4 bg-crescendo-light/20 rounded-2xl flex items-start text-sm text-crescendo-tech border border-crescendo-light/50">
+                            <i class="fas fa-magic mt-0.5 mr-2.5"></i>
+                            <p class="leading-relaxed">提示詞已完成優化！包含<strong>高傳真渲染協議</strong>，建議直接複製後貼入產圖工具。</p>
+                        </div>
+                        <div id="matrix-output" class="space-y-6"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function setField(field, value) { document.getElementById(field + '-input').value = value; }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const fileInput = document.getElementById('product-image');
+        const dropZone = document.getElementById('drop-zone');
+        const previewContainer = document.getElementById('image-preview-container');
+        const generateBtn = document.getElementById('generate-btn');
+        const matrixOutput = document.getElementById('matrix-output');
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    previewContainer.innerHTML = `<img src="${event.target.result}" alt="Preview" /><button id="remove-img" class="absolute top-3 right-3 bg-red-500 text-white w-7 h-7 rounded-full text-xs shadow-lg hover:bg-red-600 transition-all">✕</button>`;
+                    previewContainer.classList.remove('hidden');
+                    dropZone.classList.add('hidden');
+                    document.getElementById('remove-img').onclick = () => {
+                        fileInput.value = ""; previewContainer.classList.add('hidden'); dropZone.classList.remove('hidden');
+                    };
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        generateBtn.onclick = async () => {
+            const subject = document.getElementById('subject-detail').value.trim();
+            const env = document.getElementById('env-input').value.trim();
+            const light = document.getElementById('light-input').value.trim();
+            const neg = document.getElementById('neg-prompt').value.trim();
+
+            if (!fileInput.files[0] && !subject) {
+                alert("請上傳圖片或填寫主體細節。"); return;
+            }
+
+            generateBtn.disabled = true;
+            generateBtn.innerHTML = `<i class="fas fa-circle-notch fa-spin mr-3"></i> ANALYZING...`;
+            document.getElementById('init-state').classList.add('hidden');
+            document.getElementById('result-content').classList.add('hidden');
+            document.getElementById('loading').classList.remove('hidden');
+
+            const systemContext = \`你是搭載「多模態視覺認知引擎」的高階圖像修復專家。
+任務：針對輸入圖像執行「語意級圖像重構」，產出 4K 廣色域高傳真提示詞。
+
+【執行協議】
+1. 生成 4 種視角中英對照提示詞矩陣。
+2. 每個英文 Prompt 必須強制注入：'4K high fidelity', 'wide color gamut', 'context-aware OCR', 'vector-grade rendering', 'ultra-sharp traditional Chinese characters'。
+3. 文字渲染等級：印刷級清晰度，嚴禁簡體。
+4. 輸出 JSON 格式：{ "matrix": [ { "title": "視角名稱", "description": "中文說明", "prompt": "EN PROMPT" } ] }\`;
+
+            const apiKey = "AIzaSyBBFzo7gp27wjYHORo0iX6aWn1akjM_8c8"; 
+            const apiUrl = \`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent?key=\${apiKey}\`;
+
+            try {
+                let imageData = "";
+                if (fileInput.files[0]) {
+                    const reader = new FileReader();
+                    imageData = await new Promise(res => {
+                        reader.onload = () => res(reader.result.split(',')[1]);
+                        reader.readAsDataURL(fileInput.files[0]);
+                    });
+                }
+
+                const payload = {
+                    systemInstruction: { parts: [{ text: systemContext }] },
+                    contents: [{ 
+                        parts: [
+                            { text: \`主體: \${subject || "辨識圖片"}\\n環境: \${env}\\n燈光: \${light}\\n禁令: \${neg}\` },
+                            ...(imageData ? [{ inlineData: { mimeType: "image/png", data: imageData } }] : [])
+                        ] 
+                    }],
+                    generationConfig: { 
+                        responseMimeType: "application/json",
+                        responseSchema: {
+                            type: "OBJECT",
+                            properties: {
+                                matrix: {
+                                    type: "ARRAY",
+                                    items: {
+                                        type: "OBJECT",
+                                        properties: { title: {type:"STRING"}, description: {type:"STRING"}, prompt: {type:"STRING"} }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                };
+
+                const response = await fetch(apiUrl, { method: 'POST', body: JSON.stringify(payload) });
+                const result = await response.json();
+                const data = JSON.parse(result.candidates[0].content.parts[0].text);
+
+                matrixOutput.innerHTML = '';
+                data.matrix.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'prompt-block';
+                    div.innerHTML = \`
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="text-xs font-bold bg-crescendo-tech text-white px-3 py-1.5 rounded-md uppercase tracking-widest">\${item.title}</span>
+                            <button onclick="copyText(this)" class="text-xs text-crescendo-blue font-bold hover:text-crescendo-tech transition-colors flex items-center bg-blue-50 px-2.5 py-1 rounded-md hover:bg-blue-100">
+                                <i class="fas fa-copy mr-1.5"></i>COPY
+                            </button>
+                        </div>
+                        <p class="text-[13px] text-gray-600 mb-3 font-medium leading-relaxed">💎 語意分析：\${item.description}</p>
+                        <div contenteditable="true" class="text-sm font-mono text-data-black bg-gray-50/50 p-4 rounded-xl border border-gray-100 shadow-inner outline-none focus:ring-2 focus:ring-crescendo-light/50 transition-all leading-relaxed">\${item.prompt}</div>
+                    \`;
+                    matrixOutput.appendChild(div);
+                });
+
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('result-content').classList.remove('hidden');
+
+            } catch (err) {
+                console.error(err);
+                alert("任務失敗，請檢查 API Key 或網路。");
+                document.getElementById('loading').classList.add('hidden');
+                document.getElementById('init-state').classList.remove('hidden');
+            } finally {
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = \`<i class="fas fa-bolt mr-2"></i> GENERATE HIGH-RES MATRIX\`;
+            }
+        };
+
+        window.copyText = (btn) => {
+            const text = btn.parentElement.nextElementSibling.nextElementSibling.innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                const old = btn.innerHTML;
+                btn.innerHTML = \`<i class="fas fa-check text-green-600 mr-1.5"></i>COPIED\`;
+                setTimeout(() => btn.innerHTML = old, 2000);
+            });
+        };
+    });
+</script>
+
+</body>
+</html>
