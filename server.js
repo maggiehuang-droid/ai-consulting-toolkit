@@ -6,6 +6,8 @@ import { randomUUID } from 'crypto';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DATA_DIR = join(__dirname, 'data');
+// On Vercel, only /tmp is writable. Reads fall back to bundled data/ files.
+const TMP_DIR = '/tmp';
 
 const app = express();
 app.use(express.json({ limit: '10mb' }));
@@ -13,11 +15,20 @@ app.use(express.json({ limit: '10mb' }));
 // ── helpers ──────────────────────────────────────────────────────────────────
 
 function readJSON(file) {
+  // On Vercel: prefer /tmp (written data), fall back to bundled data/ (initial empty arrays)
+  if (process.env.VERCEL) {
+    try {
+      return JSON.parse(readFileSync(join(TMP_DIR, file), 'utf8'));
+    } catch {
+      return JSON.parse(readFileSync(join(DATA_DIR, file), 'utf8'));
+    }
+  }
   return JSON.parse(readFileSync(join(DATA_DIR, file), 'utf8'));
 }
 
 function writeJSON(file, data) {
-  writeFileSync(join(DATA_DIR, file), JSON.stringify(data, null, 2));
+  const path = process.env.VERCEL ? join(TMP_DIR, file) : join(DATA_DIR, file);
+  writeFileSync(path, JSON.stringify(data, null, 2));
 }
 
 // ── workshops ─────────────────────────────────────────────────────────────────
