@@ -62,7 +62,7 @@ const WORKFLOW_PHASES = [
 interface ProjectDetailData {
   id: string;
   title: string;
-  description: string;
+  workshops: { id: string; title: string; date: string }[];
   date: string;
   project_amount: number;
   project_status: string;
@@ -136,9 +136,13 @@ export default function ProjectDetail() {
 
   const handleAction = (item: any) => {
     if (item.actionLabel === "進入工作坊") {
-      navigate(`/admin/workshops/${projectId}`);
+      if (project?.workshops?.length > 0) {
+        navigate(`/admin/workshops/${project.workshops[0].id}`);
+      }
     } else if (item.actionLabel === "匯入名單") {
-      navigate(`/admin/workshops/${projectId}/groups/new`);
+      if (project?.workshops?.length > 0) {
+        navigate(`/admin/workshops/${project.workshops[0].id}/groups/new`);
+      }
     } else {
       // 預設行為：標記為完成
       if (!completedTasks.includes(item.id)) {

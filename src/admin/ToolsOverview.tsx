@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AdminLayout, { C, Btn } from "./AdminLayout";
+import CertificateModal from "./CertificateModal";
 
 const GENERAL_TOOLS = [
   { id: "role-card", title: "品牌DNA", desc: "檢測品牌靈魂" },
@@ -13,6 +14,7 @@ const GENERAL_TOOLS = [
 
 export default function ToolsOverview() {
   const navigate = useNavigate();
+  const [certModalOpen, setCertModalOpen] = useState(false);
 
   const handleOpenTool = (toolId: string) => {
     if (toolId === "copywriter") {
@@ -34,7 +36,7 @@ export default function ToolsOverview() {
     <AdminLayout title="工具入口總覽">
       <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 32 }}>
         <Btn 
-          onClick={() => window.open("/tools", "_blank")}
+          onClick={() => setCertModalOpen(true)}
           style={{ 
             background: C.blue, 
             color: "#fff", 
@@ -44,7 +46,7 @@ export default function ToolsOverview() {
             boxShadow: `0 4px 12px ${C.blue}40`
           }}
         >
-          Admin 進入畫面
+          匯出完課證明
         </Btn>
       </div>
 
@@ -144,6 +146,8 @@ export default function ToolsOverview() {
           </div>
         ))}
       </div>
+
+      {certModalOpen && <CertificateModal onClose={() => setCertModalOpen(false)} />}
     </AdminLayout>
   );
 }

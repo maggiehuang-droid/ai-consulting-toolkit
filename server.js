@@ -105,40 +105,77 @@ app.get('/api/projects', (req, res) => {
   const workshops = readJSON('workshops.json');
   const projects = readJSON('projects.json');
   
-  const result = workshops.map(w => {
-    const p = projects.find(proj => proj.workshop_id === w.id) || {};
-    return {
-      ...w,
-      project_amount: p.project_amount || 0,
-      completed_tasks: p.completed_tasks || [],
-      project_status: p.project_status || 'planning'
-    };
+  function getProjectName(title) {
+    if (!title) return '未命名專案';
+    const parts = title.split('-');
+    if (parts.length > 1) {
+      return parts.slice(1).join('-').trim();
+    }
+    return title.trim();
+  }
+
+  const projectMap = {};
+  
+  workshops.forEach(w => {
+    const projectName = getProjectName(w.title);
+    if (!projectMap[projectName]) {
+      const savedData = projects.find(p => p.id === projectName) || {};
+      projectMap[projectName] = {
+        id: projectName,
+        title: projectName,
+        workshops: [],
+        date: w.date,
+        project_amount: savedData.project_amount || 0,
+        completed_tasks: savedData.completed_tasks || [],
+        completed_outputs: savedData.completed_outputs || [],
+        project_status: savedData.project_status || 'planning'
+      };
+    }
+    projectMap[projectName].workshops.push({ id: w.id, title: w.title, date: w.date });
   });
-  res.json(result);
+  
+  res.json(Object.values(projectMap));
 });
 
 app.get('/api/projects/:id', (req, res) => {
-  const workshop = readJSON('workshops.json').find(w => w.id === req.params.id);
-  if (!workshop) return res.status(404).json({ error: 'Project not found' });
+  const projectId = req.params.id;
+  const workshops = readJSON('workshops.json');
+  
+  function getProjectName(title) {
+    if (!title) return '未命名專案';
+    const parts = title.split('-');
+    if (parts.length > 1) {
+      return parts.slice(1).join('-').trim();
+    }
+    return title.trim();
+  }
+
+  const relatedWorkshops = workshops.filter(w => getProjectName(w.title) === projectId);
+  
+  if (relatedWorkshops.length === 0) return res.status(404).json({ error: 'Project not found' });
   
   const projects = readJSON('projects.json');
-  const p = projects.find(proj => proj.workshop_id === req.params.id) || {};
+  const savedData = projects.find(p => p.id === projectId) || {};
   
   res.json({
-    ...workshop,
-    project_amount: p.project_amount || 0,
-    completed_tasks: p.completed_tasks || [],
-    completed_outputs: p.completed_outputs || [],
-    project_status: p.project_status || 'planning'
+    id: projectId,
+    title: projectId,
+    workshops: relatedWorkshops,
+    date: relatedWorkshops[0].date,
+    project_amount: savedData.project_amount || 0,
+    completed_tasks: savedData.completed_tasks || [],
+    completed_outputs: savedData.completed_outputs || [],
+    project_status: savedData.project_status || 'planning'
   });
 });
 
 app.put('/api/projects/:id', (req, res) => {
+  const projectId = req.params.id;
   const projects = readJSON('projects.json');
-  const idx = projects.findIndex(p => p.workshop_id === req.params.id);
+  const idx = projects.findIndex(p => p.id === projectId);
   
   const newProjectData = {
-    workshop_id: req.params.id,
+    id: projectId,
     project_amount: req.body.project_amount ?? 0,
     completed_tasks: req.body.completed_tasks ?? [],
     completed_outputs: req.body.completed_outputs ?? [],

@@ -125,10 +125,8 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
         boxShadow: "0 1px 4px rgba(69,134,240,0.06)",
         flexShrink: 0,
       }}>
-        <a
-          href="https://www.cresclab.com/tw"
-          target="_blank"
-          rel="noopener noreferrer"
+        <Link
+          to="/"
           style={{ display: "block", marginRight: 20 }}
         >
           <img
@@ -137,7 +135,7 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
             style={{ height: 24, width: "auto", objectFit: "contain", display: "block" }}
             referrerPolicy="no-referrer"
           />
-        </a>
+        </Link>
         <span style={{ width: 1, height: 18, background: C.border, marginRight: 16 }} />
         <span style={{ fontWeight: 800, fontSize: 15, color: C.text }}>管理後台</span>
         {title && (
