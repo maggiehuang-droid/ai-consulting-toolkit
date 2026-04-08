@@ -5,35 +5,37 @@ import { fileURLToPath } from 'url';
 import { randomUUID } from 'crypto';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const DATA_DIR = join(__dirname, 'data');
+const IS_VERCEL = !!process.env.VERCEL;
+const ORIGINAL_DATA_DIR = join(__dirname, 'data');
+const DATA_DIR = IS_VERCEL ? '/tmp' : ORIGINAL_DATA_DIR;
 
 const app = express();
 app.use(express.json({ limit: '10mb' }));
 
-// ── in-memory store ───────────────────────────────────────────────────────────
-// Loaded once at module start from bundled data/ files.
-// On Vercel: all reads/writes stay in memory within the same function instance.
-// On local dev: also writes back to data/ files so data persists across restarts.
+// ── helpers ──────────────────────────────────────────────────────────────────
 
-const FILES = ['workshops.json', 'groups.json', 'sessions.json', 'members.json'];
-
-const store = {};
-for (const file of FILES) {
+function readJSON(file) {
+  const targetPath = join(DATA_DIR, file);
   try {
-    store[file] = JSON.parse(readFileSync(join(DATA_DIR, file), 'utf8'));
-  } catch {
-    store[file] = [];
+    return JSON.parse(readFileSync(targetPath, 'utf8'));
+  } catch (err) {
+    if (IS_VERCEL && err.code === 'ENOENT') {
+      try {
+        const fallbackPath = join(ORIGINAL_DATA_DIR, file);
+        const data = readFileSync(fallbackPath, 'utf8');
+        writeFileSync(targetPath, data);
+        return JSON.parse(data);
+      } catch (e) {
+        return [];
+      }
+    }
+    if (err.code === 'ENOENT') return [];
+    throw err;
   }
 }
 
-function readJSON(file) {
-  return store[file] ?? [];
-}
-
 function writeJSON(file, data) {
-  store[file] = data;
-  // Always try to persist to disk; silently ignore if read-only (e.g. Vercel)
-  try { writeFileSync(join(DATA_DIR, file), JSON.stringify(data, null, 2)); } catch {}
+  writeFileSync(join(DATA_DIR, file), JSON.stringify(data, null, 2));
 }
 
 // ── workshops ─────────────────────────────────────────────────────────────────
@@ -95,6 +97,63 @@ app.delete('/api/workshops/:id', (req, res) => {
   workshops = workshops.filter(w => w.id !== req.params.id);
   writeJSON('workshops.json', workshops);
   res.json({ ok: true });
+});
+
+// ── projects ──────────────────────────────────────────────────────────────────
+
+app.get('/api/projects', (req, res) => {
+  const workshops = readJSON('workshops.json');
+  const projects = readJSON('projects.json');
+  
+  const result = workshops.map(w => {
+    const p = projects.find(proj => proj.workshop_id === w.id) || {};
+    return {
+      ...w,
+      project_amount: p.project_amount || 0,
+      completed_tasks: p.completed_tasks || [],
+      project_status: p.project_status || 'planning'
+    };
+  });
+  res.json(result);
+});
+
+app.get('/api/projects/:id', (req, res) => {
+  const workshop = readJSON('workshops.json').find(w => w.id === req.params.id);
+  if (!workshop) return res.status(404).json({ error: 'Project not found' });
+  
+  const projects = readJSON('projects.json');
+  const p = projects.find(proj => proj.workshop_id === req.params.id) || {};
+  
+  res.json({
+    ...workshop,
+    project_amount: p.project_amount || 0,
+    completed_tasks: p.completed_tasks || [],
+    completed_outputs: p.completed_outputs || [],
+    project_status: p.project_status || 'planning'
+  });
+});
+
+app.put('/api/projects/:id', (req, res) => {
+  const projects = readJSON('projects.json');
+  const idx = projects.findIndex(p => p.workshop_id === req.params.id);
+  
+  const newProjectData = {
+    workshop_id: req.params.id,
+    project_amount: req.body.project_amount ?? 0,
+    completed_tasks: req.body.completed_tasks ?? [],
+    completed_outputs: req.body.completed_outputs ?? [],
+    project_status: req.body.project_status ?? 'planning',
+    updated_at: new Date().toISOString()
+  };
+
+  if (idx === -1) {
+    projects.push(newProjectData);
+  } else {
+    projects[idx] = { ...projects[idx], ...newProjectData };
+  }
+  
+  writeJSON('projects.json', projects);
+  res.json(newProjectData);
 });
 
 // ── groups ────────────────────────────────────────────────────────────────────
@@ -372,22 +431,22 @@ app.get('/api/sessions/:workshopId/:groupId/:step', (req, res) => {
 
 // ── start ─────────────────────────────────────────────────────────────────────
 
-if (!process.env.VERCEL) {
-  if (process.env.NODE_ENV !== "production") {
-    const { createServer: createViteServer } = await import('vite');
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: "spa",
-    });
-    app.use(vite.middlewares);
-  } else {
-    const distPath = join(process.cwd(), 'dist');
-    app.use(express.static(distPath));
-    app.get('*', (req, res) => {
-      res.sendFile(join(distPath, 'index.html'));
-    });
-  }
+if (process.env.NODE_ENV !== "production" && !process.env.VERCEL) {
+  const { createServer: createViteServer } = await import('vite');
+  const vite = await createViteServer({
+    server: { middlewareMode: true },
+    appType: "spa",
+  });
+  app.use(vite.middlewares);
+} else if (!process.env.VERCEL) {
+  const distPath = join(process.cwd(), 'dist');
+  app.use(express.static(distPath));
+  app.get('*', (req, res) => {
+    res.sendFile(join(distPath, 'index.html'));
+  });
+}
 
+if (!process.env.VERCEL) {
   const PORT = process.env.PORT || 3000;
   app.listen(PORT, "0.0.0.0", () => console.log(`Server running at http://localhost:${PORT}`));
 }

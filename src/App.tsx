@@ -46,7 +46,7 @@ const GENERAL_TOOLS = [
 
 function BrandLogo({ height = 36 }) {
   return (
-    <a href="/" style={{ display: "block" }}>
+    <a href="https://www.cresclab.com/tw" target="_blank" rel="noopener noreferrer" style={{ display: "block" }}>
       <img
         src={ASSETS.logo}
         alt="Crescendo Lab"

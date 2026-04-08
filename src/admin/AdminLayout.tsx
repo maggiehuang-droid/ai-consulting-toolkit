@@ -49,7 +49,7 @@ interface AdminLayoutProps {
   title?: string;
 }
 
-const SIDEBAR_W = 168;
+const SIDEBAR_W = 200;
 
 const NAV_ITEMS = [
   {
@@ -74,8 +74,18 @@ const NAV_ITEMS = [
     ),
   },
   {
+    label: "專案管理",
+    to: "/admin/projects",
+    exact: false,
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+      </svg>
+    ),
+  },
+  {
     label: "工具入口總覽",
-    to: "/tools",
+    to: "/admin/tools",
     exact: true,
     icon: (
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -105,8 +115,8 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
       <nav style={{
         background: C.panel,
         borderBottom: `1px solid ${C.border}`,
-        padding: "0 20px",
-        height: 48,
+        padding: "0 28px",
+        height: 56,
         display: "flex",
         alignItems: "center",
         position: "sticky",
@@ -115,23 +125,25 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
         boxShadow: "0 1px 4px rgba(69,134,240,0.06)",
         flexShrink: 0,
       }}>
-        <Link
-          to="/"
+        <a
+          href="https://www.cresclab.com/tw"
+          target="_blank"
+          rel="noopener noreferrer"
           style={{ display: "block", marginRight: 20 }}
         >
           <img
             src="https://i.ibb.co/MxgTGTLH/Logo-black.png"
             alt="Crescendo Lab"
-            style={{ height: 20, width: "auto", objectFit: "contain", display: "block" }}
+            style={{ height: 24, width: "auto", objectFit: "contain", display: "block" }}
             referrerPolicy="no-referrer"
           />
-        </Link>
-        <span style={{ width: 1, height: 16, background: C.border, marginRight: 14 }} />
-        <span style={{ fontWeight: 800, fontSize: 13, color: C.text }}>管理後台</span>
+        </a>
+        <span style={{ width: 1, height: 18, background: C.border, marginRight: 16 }} />
+        <span style={{ fontWeight: 800, fontSize: 15, color: C.text }}>管理後台</span>
         {title && (
           <>
-            <span style={{ color: C.border, margin: "0 6px", fontSize: 14 }}>›</span>
-            <span style={{ color: C.muted, fontSize: 12, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 280 }}>
+            <span style={{ color: C.border, margin: "0 8px", fontSize: 16 }}>›</span>
+            <span style={{ color: C.muted, fontSize: 13, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 280 }}>
               {title}
             </span>
           </>
@@ -142,7 +154,7 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
             marginLeft: "auto",
             color: C.muted,
             textDecoration: "none",
-            fontSize: 12,
+            fontSize: 13,
             fontWeight: 500,
             display: "flex",
             alignItems: "center",
@@ -164,12 +176,12 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
           width: SIDEBAR_W,
           flexShrink: 0,
           background: C.blue,
-          minHeight: "calc(100vh - 48px)",
-          padding: "16px 0",
+          minHeight: "calc(100vh - 56px)",
+          padding: "24px 0",
           position: "sticky",
-          top: 48,
+          top: 56,
           alignSelf: "flex-start",
-          height: "calc(100vh - 48px)",
+          height: "calc(100vh - 56px)",
           overflowY: "auto",
         }}>
           {NAV_ITEMS.map(item => {
@@ -181,12 +193,12 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  gap: 8,
-                  padding: "8px 14px",
-                  margin: "1px 8px",
-                  borderRadius: 8,
+                  gap: 10,
+                  padding: "11px 20px",
+                  margin: "2px 10px",
+                  borderRadius: 10,
                   textDecoration: "none",
-                  fontSize: 13,
+                  fontSize: 14,
                   fontWeight: active ? 700 : 500,
                   color: active ? "#fff" : "rgba(255,255,255,0.7)",
                   background: active ? "rgba(255,255,255,0.18)" : "transparent",
@@ -203,7 +215,7 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
         </aside>
 
         {/* Main content */}
-        <main style={{ flex: 1, padding: "24px 28px 60px", minWidth: 0 }}>
+        <main style={{ flex: 1, padding: "32px 36px 80px", minWidth: 0 }}>
           {children}
         </main>
       </div>
@@ -369,8 +381,8 @@ export function Card({
       style={{
         background: C.panel,
         border: `1px solid ${C.border}`,
-        borderRadius: 12,
-        padding: "16px 20px",
+        borderRadius: 14,
+        padding: "20px 24px",
         transition: hoverable ? "border-color 0.15s, box-shadow 0.15s" : undefined,
         ...style,
       }}

@@ -116,20 +116,7 @@ function ImportSection({ workshopId, onImported }: { workshopId: string; onImpor
         try {
           const wb = XLSX.read(e.target!.result, { type: "binary" });
           const ws = wb.Sheets[wb.SheetNames[0]];
-          const raw = XLSX.utils.sheet_to_json<Record<string, string>>(ws, { defval: "" });
-          // Normalize: trim column names and string values; infer is_leader from 組長名稱
-          const rows = raw.map(row => {
-            const r: Record<string, string> = {};
-            for (const [k, v] of Object.entries(row)) {
-              r[k.trim()] = typeof v === "string" ? v.trim() : String(v);
-            }
-            // If is_leader not present, infer from 組長名稱: member is leader if name matches
-            if (!("is_leader" in r) && r["組長名稱"]) {
-              r.is_leader = r.name === r["組長名稱"] ? "是" : "";
-            }
-            return r;
-          });
-          resolve(rows);
+          resolve(XLSX.utils.sheet_to_json<Record<string, string>>(ws, { defval: "" }));
         } catch { reject(new Error("檔案解析失敗，請確認格式正確")); }
       };
       reader.onerror = () => reject(new Error("檔案讀取失敗"));
