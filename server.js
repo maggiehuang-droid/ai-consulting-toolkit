@@ -32,10 +32,8 @@ function readJSON(file) {
 
 function writeJSON(file, data) {
   store[file] = data;
-  // Local dev: persist to disk so data survives server restarts
-  if (!process.env.VERCEL) {
-    try { writeFileSync(join(DATA_DIR, file), JSON.stringify(data, null, 2)); } catch {}
-  }
+  // Always try to persist to disk; silently ignore if read-only (e.g. Vercel)
+  try { writeFileSync(join(DATA_DIR, file), JSON.stringify(data, null, 2)); } catch {}
 }
 
 // ── workshops ─────────────────────────────────────────────────────────────────
@@ -374,22 +372,22 @@ app.get('/api/sessions/:workshopId/:groupId/:step', (req, res) => {
 
 // ── start ─────────────────────────────────────────────────────────────────────
 
-if (process.env.NODE_ENV !== "production" && !process.env.VERCEL) {
-  const { createServer: createViteServer } = await import('vite');
-  const vite = await createViteServer({
-    server: { middlewareMode: true },
-    appType: "spa",
-  });
-  app.use(vite.middlewares);
-} else if (!process.env.VERCEL) {
-  const distPath = join(process.cwd(), 'dist');
-  app.use(express.static(distPath));
-  app.get('*', (req, res) => {
-    res.sendFile(join(distPath, 'index.html'));
-  });
-}
-
 if (!process.env.VERCEL) {
+  if (process.env.NODE_ENV !== "production") {
+    const { createServer: createViteServer } = await import('vite');
+    const vite = await createViteServer({
+      server: { middlewareMode: true },
+      appType: "spa",
+    });
+    app.use(vite.middlewares);
+  } else {
+    const distPath = join(process.cwd(), 'dist');
+    app.use(express.static(distPath));
+    app.get('*', (req, res) => {
+      res.sendFile(join(distPath, 'index.html'));
+    });
+  }
+
   const PORT = process.env.PORT || 3000;
   app.listen(PORT, "0.0.0.0", () => console.log(`Server running at http://localhost:${PORT}`));
 }
