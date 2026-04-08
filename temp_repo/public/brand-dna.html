@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>品牌 DNA 檢測器 | 漸強實驗室 Crescendo lab</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Outfit, JetBrains Mono, Noto Sans TC -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Noto+Sans+TC:wght@300;400;500;700;900&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- html2pdf.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <script>
+        // 初始化 Tailwind 配置
+        window.addEventListener('load', () => {
+            if (typeof tailwind !== 'undefined') {
+                tailwind.config = {
+                    theme: {
+                        extend: {
+                            colors: {
+                                crescendo: { blue: '#4586F0', tech: '#1F49A3', light: '#B5D1FE' },
+                                data: { black: '#222A36' },
+                                modern: { gray: '#36393D' }
+                            },
+                            fontFamily: {
+                                sans: ['Noto Sans TC', 'sans-serif'],
+                                outfit: ['Outfit', 'sans-serif'],
+                                mono: ['JetBrains Mono', 'monospace'],
+                            }
+                        }
+                    }
+                };
+            }
+        });
+    </script>
+    <style type="text/tailwindcss">
+        @layer base {
+            body { background-color: #F6F8F9; color: #222A36; font-family: 'Noto Sans TC', sans-serif; }
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #B5D1FE; border-radius: 10px; }
+
+        .glass-card {
+            background: white;
+            border: 1px solid rgba(181, 209, 254, 0.3);
+            @apply shadow-[0_10px_30px_-10px_rgba(34,42,54,0.05)];
+        }
+        
+        .spinner {
+            border: 4px solid rgba(69, 134, 240, 0.1);
+            border-left-color: #4586F0;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        .dna-report {
+            background: white;
+            background-image: radial-gradient(#e5e7eb 0.5px, transparent 0.5px);
+            background-size: 15px 15px;
+        }
+
+        .score-bar { @apply h-1.5 bg-gray-200 rounded-full overflow-hidden relative; }
+        .score-fill { @apply absolute h-full bg-crescendo-blue transition-all duration-1000 ease-out; }
+
+        .archetype-tag {
+            @apply bg-crescendo-tech text-white px-3 py-1 rounded-md text-[12px] font-extrabold uppercase;
+        }
+
+        .data-tag { @apply bg-slate-100 text-slate-600 px-3 py-1.5 rounded-lg text-[12px] font-bold; }
+        .kw-tag { @apply bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg text-[12px] font-bold border border-blue-100; }
+
+        .pdf-export-container { position: absolute; left: -9999px; top: -9999px; width: 800px; background: white; padding: 40px; }
+        
+        #detect-btn:hover i:last-child { transform: translateX(3px); }
+    </style>
+</head>
+<body class="antialiased">
+
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <!-- Header: 縮小 Icon 與文字間距 -->
+    <header class="flex items-center justify-between mb-8 pb-4 border-b border-gray-200">
+        <div class="flex items-center gap-1">
+            <img src="https://i.ibb.co/BHH84y1G/DNA.png" alt="DNA Audit Icon" class="w-32 h-32 object-contain drop-shadow-xl -ml-4">
+            <div class="flex flex-col justify-center">
+                <h1 class="text-4xl font-black font-outfit text-data-black tracking-tighter uppercase leading-none">Brand <span class="text-crescendo-blue">DNA Audit</span></h1>
+                <p class="text-sm font-bold text-modern-gray mt-2 opacity-70">漸強實驗室 Crescendo lab - 分析你的品牌基因代碼</p>
+            </div>
+        </div>
+        <div class="hidden sm:block text-right">
+            <span class="text-[10px] font-bold text-modern-gray block opacity-50 uppercase tracking-widest mb-1">Crescendo lab Internal</span>
+            <button class="text-xs font-black bg-white border border-gray-200 px-4 py-2 rounded-full hover:bg-gray-50 transition-all">
+                <i class="fas fa-history mr-1"></i> 檢測歷史
+            </button>
+        </div>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <!-- 左側控制台 -->
+        <div class="lg:col-span-4 space-y-6">
+            <div class="glass-card rounded-2xl p-6 border-l-4 border-crescendo-blue">
+                <h2 class="text-lg font-black mb-1 flex items-center text-crescendo-tech uppercase">
+                    <i class="fas fa-vial mr-2 text-crescendo-blue"></i> 01. 品牌基因採樣
+                </h2>
+                <p class="text-[11px] text-modern-gray font-medium leading-relaxed mb-5 text-left">輸入網址或品牌介紹，AI 將模擬實驗室採樣流程，找到你的品牌核心 DNA：</p>
+                
+                <div class="space-y-4">
+                    <textarea id="brand-url" rows="3" class="w-full rounded-xl border-gray-200 bg-gray-50/50 p-4 outline-none focus:border-crescendo-blue transition-all text-sm font-medium" placeholder="請貼上官網網址..."></textarea>
+                    <button id="detect-btn" class="w-full bg-crescendo-blue text-white py-3 rounded-xl hover:bg-crescendo-tech transition-all flex items-center justify-center shadow-md text-sm font-black">
+                        <i class="fas fa-vial mr-2"></i> 進行分析 <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+
+            <button id="download-btn" class="w-full bg-data-black text-white py-4 rounded-2xl font-black text-sm hover:bg-black transition-all flex items-center justify-center shadow-lg disabled:opacity-50 group" disabled>
+                <i class="fas fa-file-pdf mr-2 group-hover:scale-110 transition-transform"></i> 下載 PDF 診斷報告
+            </button>
+        </div>
+
+        <!-- 右側診斷結果 -->
+        <div class="lg:col-span-8">
+            <div id="audit-report" class="glass-card rounded-2xl h-full min-h-[750px] flex flex-col shadow-2xl dna-report relative overflow-hidden text-left">
+                
+                <!-- Loading 狀態 -->
+                <div id="loading" class="hidden absolute inset-0 bg-white/95 z-20 flex flex-col items-center justify-center backdrop-blur-sm rounded-2xl">
+                    <div class="spinner mb-4"></div>
+                    <p class="text-crescendo-tech font-black font-outfit animate-pulse tracking-widest text-lg uppercase">Sequencing DNA...</p>
+                    <p class="text-xs text-modern-gray mt-2 px-6 text-center leading-relaxed">正在解析網頁資訊、受眾標籤、核心年齡、<br>穩定色彩系統與溝通調性維度。</p>
+                </div>
+
+                <!-- 初始狀態 -->
+                <div id="init-state" class="flex-grow flex flex-col items-center justify-center p-12 text-center">
+                    <div class="w-44 h-44 bg-gray-50 rounded-full flex items-center justify-center mb-6 border-4 border-white shadow-inner overflow-hidden mx-auto">
+                        <img src="https://i.ibb.co/BHH84y1G/DNA.png" alt="DNA Placeholder" class="w-24 h-24 object-contain opacity-20 grayscale">
+                    </div>
+                    <h3 class="text-2xl font-black text-data-black mb-2 tracking-tighter uppercase">等待採樣分析</h3>
+                    <p class="text-sm text-modern-gray leading-relaxed max-w-sm italic mx-auto">輸入品牌網址並點擊「進行分析」。</p>
+                    <div id="error-box" class="hidden mt-6 p-4 bg-red-50 text-red-600 text-[11px] font-bold rounded-xl border border-red-100 max-w-sm mx-auto text-left leading-relaxed"></div>
+                </div>
+
+                <!-- 報告正式內容 (初始隱藏) -->
+                <div id="report-content" class="hidden flex-col p-10 md:p-14 space-y-10 overflow-y-auto" style="max-height: 950px;">
+                    <div class="flex justify-between items-start border-b-4 border-data-black pb-8">
+                        <div>
+                            <h2 id="brand-name" class="text-5xl font-black font-outfit uppercase tracking-tighter text-data-black">BRAND NAME</h2>
+                            <div class="flex gap-2 mt-4 items-center">
+                                <span id="archetype-label" class="archetype-tag">ARCHETYPE</span>
+                                <span id="age-group" class="text-[11px] font-black bg-data-black text-white px-3 py-1 rounded">-- YRS</span>
+                                <p class="text-[11px] font-mono text-modern-gray ml-2">ID: <span id="report-id">#DNA-24-XXXX</span></p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="bg-data-black text-white px-3 py-1 text-[10px] font-black rounded uppercase tracking-widest">DNA Dashboard</span>
+                        </div>
+                    </div>
+
+                    <!-- 實戰標籤區 -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-gray-50 p-6 rounded-2xl border border-gray-100 shadow-sm">
+                            <h4 class="text-[11px] font-black text-crescendo-blue mb-4 uppercase tracking-widest flex items-center">
+                                <i class="fas fa-user-friends mr-2"></i> 受眾標籤
+                            </h4>
+                            <div id="audience-tags" class="flex flex-wrap gap-2"></div>
+                        </div>
+                        <div class="bg-gray-50 p-6 rounded-2xl border border-gray-100 shadow-sm">
+                            <h4 class="text-[11px] font-black text-crescendo-blue mb-4 uppercase tracking-widest flex items-center">
+                                <i class="fas fa-key mr-2"></i> 核心關鍵字
+                            </h4>
+                            <div id="brand-keywords" class="flex flex-wrap gap-2"></div>
+                        </div>
+                    </div>
+
+                    <!-- 視覺與質感 -->
+                    <section class="space-y-4">
+                        <h4 class="text-[11px] font-black text-crescendo-blue uppercase tracking-widest flex items-center border-l-4 border-crescendo-blue pl-3">
+                            <i class="fas fa-palette mr-2"></i> 01. Visual Identity / 視覺風格
+                        </h4>
+                        <div class="flex flex-col md:flex-row gap-8 items-center bg-white p-4 rounded-xl border border-gray-50">
+                            <div id="color-palette" class="flex gap-3"></div>
+                            <p id="visual-logic" class="text-sm text-modern-gray font-bold italic leading-relaxed flex-grow border-l border-gray-200 pl-6"></p>
+                        </div>
+                    </section>
+
+                    <!-- 溝通維度指標 -->
+                    <section class="space-y-6">
+                        <h4 class="text-[11px] font-black text-crescendo-blue uppercase tracking-widest flex items-center border-l-4 border-crescendo-blue pl-3">
+                            <i class="fas fa-sliders-h mr-2"></i> 02. Communication / 溝通指標
+                        </h4>
+                        <div class="grid grid-cols-2 gap-x-16 gap-y-6 px-4">
+                            <div class="space-y-2">
+                                <div class="flex justify-between text-[10px] font-black text-modern-gray uppercase">
+                                    <span>嚴肅 ↔ 幽默</span><span id="score-humor">--%</span>
+                                </div>
+                                <div class="score-bar"><div id="fill-humor" class="score-fill" style="width:0%"></div></div>
+                            </div>
+                            <div class="space-y-2">
+                                <div class="flex justify-between text-[10px] font-black text-modern-gray uppercase">
+                                    <span>正式 ↔ 口語</span><span id="score-casual">--%</span>
+                                </div>
+                                <div class="score-bar"><div id="fill-casual" class="score-fill" style="width:0%"></div></div>
+                            </div>
+                            <div class="space-y-2">
+                                <div class="flex justify-between text-[10px] font-black text-modern-gray uppercase">
+                                    <span>客氣 ↔ 犀利</span><span id="score-sharp">--%</span>
+                                </div>
+                                <div class="score-bar"><div id="fill-sharp" class="score-fill" style="width:0%"></div></div>
+                            </div>
+                            <div class="space-y-2">
+                                <div class="flex justify-between text-[10px] font-black text-modern-gray uppercase">
+                                    <span>邏輯 ↔ 感性</span><span id="score-emotion">--%</span>
+                                </div>
+                                <div class="score-bar"><div id="fill-emotion" class="score-fill" style="width:0%"></div></div>
+                            </div>
+                        </div>
+                        
+                        <!-- 靈魂定調：靠左排版 -->
+                        <div class="p-8 bg-data-black text-white rounded-3xl shadow-xl relative overflow-hidden mt-4">
+                             <div class="absolute -right-4 -bottom-4 opacity-10 text-6xl"><i class="fas fa-quote-right"></i></div>
+                            <p id="soul-desc" class="text-base leading-relaxed font-bold tracking-tight text-left relative z-10"></p>
+                        </div>
+                    </section>
+
+                    <!-- 安全紅線 -->
+                    <section class="space-y-4">
+                        <h4 class="text-[11px] font-black text-red-500 uppercase tracking-widest flex items-center border-l-4 border-red-500 pl-3">
+                            <i class="fas fa-shield-alt mr-2"></i> 03. Brand Safety / 安全紅線
+                        </h4>
+                        <ul id="taboo-list" class="grid grid-cols-2 gap-4 text-xs font-bold text-modern-gray px-4"></ul>
+                    </section>
+
+                    <!-- Footer -->
+                    <div class="border-t-2 border-gray-100 pt-8 text-[11px] text-gray-400 font-mono flex justify-between items-center italic">
+                        <div class="flex items-center">
+                            <img src="https://i.ibb.co/Sk6GNH2/cam.png" class="w-6 h-6 grayscale opacity-50 mr-2" alt="Logo">
+                            <span>CRESCENDO LAB DNA ENGINE v9.0 (High Stability)</span>
+                        </div>
+                        <span id="timestamp">--</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 用於 PDF 匯出的隱藏容器 -->
+<div id="pdf-export-container" class="pdf-export-container"></div>
+
+<script>
+    // API 金鑰由執行環境提供，保留為空字串
+     
+    // 更新為最新的模型以提高 JSON 輸出的穩定性
+    const apiUrl = "/api/gemini?model=gemini-2.5-flash";
+
+    // 強化版 JSON 擷取：解決 Unexpected end of input 問題
+    function safeExtractJSON(text) {
+        try {
+            const start = text.indexOf('{');
+            const end = text.lastIndexOf('}');
+            if (start === -1 || end === -1) return null;
+            const jsonPart = text.substring(start, end + 1);
+            return JSON.parse(jsonPart);
+        } catch (e) {
+            console.error("JSON Parsing Error:", e, "Raw Text:", text);
+            return null;
+        }
+    }
+
+    async function fetchWithRetry(url, payload, maxRetries = 3) {
+        let retries = 0;
+        while (retries < maxRetries) {
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`連線失敗 (HTTP ${response.status}): ${errorText}`);
+                }
+                return await response.json();
+            } catch (err) {
+                retries++;
+                if (retries === maxRetries) throw err;
+                await new Promise(resolve => setTimeout(resolve, Math.pow(2, retries) * 1000));
+            }
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const detectBtn = document.getElementById('detect-btn');
+        const downloadBtn = document.getElementById('download-btn');
+        const loading = document.getElementById('loading');
+        const initState = document.getElementById('init-state');
+        const reportContent = document.getElementById('report-content');
+        const errorBox = document.getElementById('error-box');
+
+        detectBtn.onclick = async () => {
+            const url = document.getElementById('brand-url').value.trim();
+            if (!url) return;
+
+            detectBtn.disabled = true;
+            loading.classList.remove('hidden');
+            initState.classList.add('hidden');
+            reportContent.classList.add('hidden');
+            downloadBtn.disabled = true;
+            errorBox.classList.add('hidden');
+
+            const payload = {
+                systemInstruction: { parts: [{ text: "你是一位搭載行銷學與色彩心理學專家系統的品牌審計師。請根據輸入的品牌網址或名稱進行深度分析，產出一份實戰標籤儀表板。必須套用榮格 12 原型、NN/g 標準。色彩必須鎖定 Logo 主色。" }] },
+                contents: [{ parts: [{ text: `請分析並診斷此品牌: ${url}` }] }],
+                // 移除 tools: [{ google_search: {} }] 避免與 JSON schema 衝突導致 400 Bad Request
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "OBJECT",
+                        properties: {
+                            brand_name: { type: "STRING" },
+                            archetype: { type: "STRING" },
+                            age_group: { type: "STRING" },
+                            audience_tags: { type: "ARRAY", items: { type: "STRING" } },
+                            brand_keywords: { type: "ARRAY", items: { type: "STRING" } },
+                            colors: { type: "ARRAY", items: { type: "STRING" } },
+                            visual_logic: { type: "STRING" },
+                            soul_description: { type: "STRING" },
+                            scores: {
+                                type: "OBJECT",
+                                properties: { 
+                                    humor: { type: "NUMBER" }, 
+                                    casual: { type: "NUMBER" }, 
+                                    sharp: { type: "NUMBER" }, 
+                                    emotion: { type: "NUMBER" } 
+                                }
+                            },
+                            taboos: { type: "ARRAY", items: { type: "STRING" } }
+                        }
+                    },
+                    temperature: 0.1
+                }
+            };
+
+            try {
+                const result = await fetchWithRetry(apiUrl, payload);
+                const rawText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                const data = safeExtractJSON(rawText);
+                
+                if (!data) throw new Error("AI 回傳格式異常，無法解析為診斷資料。");
+                
+                renderReport(data);
+
+            } catch (err) {
+                console.error("Diagnostic Failure:", err);
+                errorBox.innerText = `分析失敗：${err.message}。這可能是因為 API 限制或網路問題，請稍後再試。`;
+                errorBox.classList.remove('hidden');
+                initState.classList.remove('hidden');
+            } finally {
+                loading.classList.add('hidden');
+                detectBtn.disabled = false;
+            }
+        };
+
+        function renderReport(data) {
+            document.getElementById('brand-name').innerText = data.brand_name || "未知品牌";
+            document.getElementById('archetype-label').innerText = data.archetype || "分析中";
+            document.getElementById('age-group').innerText = data.age_group || "--";
+            document.getElementById('report-id').innerText = `#DNA-24-${Math.floor(Math.random()*9000 + 1000)}`;
+            document.getElementById('timestamp').innerText = new Date().toLocaleString('zh-TW');
+            
+            renderTags('audience-tags', data.audience_tags || [], 'data-tag');
+            renderTags('brand-keywords', data.brand_keywords || [], 'kw-tag');
+
+            const palette = document.getElementById('color-palette');
+            palette.innerHTML = '';
+            (data.colors || []).slice(0, 4).forEach(hex => {
+                const col = document.createElement('div');
+                col.className = 'w-16 h-16 rounded-2xl shadow-xl border-4 border-white flex items-end justify-center pb-2 text-[8px] font-bold text-white';
+                col.style.backgroundColor = hex;
+                col.style.textShadow = '0 1px 2px rgba(0,0,0,0.5)';
+                col.innerText = hex.toUpperCase();
+                palette.appendChild(col);
+            });
+
+            document.getElementById('visual-logic').innerText = data.visual_logic || "";
+            document.getElementById('soul-desc').innerText = data.soul_description || "";
+
+            ['humor', 'casual', 'sharp', 'emotion'].forEach(id => {
+                const score = (data.scores && data.scores[id]) || 50;
+                document.getElementById(`score-${id}`).innerText = score + '%';
+                document.getElementById(`fill-${id}`).style.width = score + '%';
+            });
+
+            const tabooList = document.getElementById('taboo-list');
+            tabooList.innerHTML = '';
+            (data.taboos || []).forEach(t => {
+                const li = document.createElement('li');
+                li.className = 'flex items-start bg-red-50 p-3 rounded-xl border border-red-100 shadow-sm';
+                li.innerHTML = `<i class="fas fa-times-circle text-red-500 mt-1 mr-3 text-xs"></i> <span class="leading-relaxed text-data-black">${t}</span>`;
+                tabooList.appendChild(li);
+            });
+
+            reportContent.classList.remove('hidden');
+            reportContent.style.display = 'flex';
+            downloadBtn.disabled = false;
+        }
+
+        function renderTags(containerId, tags, className) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            tags.forEach(tag => {
+                const span = document.createElement('span');
+                span.className = className;
+                span.innerText = tag;
+                container.appendChild(span);
+            });
+        }
+
+        downloadBtn.onclick = () => {
+            const source = document.getElementById('report-content');
+            const exportContainer = document.getElementById('pdf-export-container');
+            exportContainer.innerHTML = source.innerHTML;
+            
+            // 同步進度條寬度（避免動畫過程導致截圖寬度不正確）
+            const originalBars = source.querySelectorAll('.score-fill');
+            const exportBars = exportContainer.querySelectorAll('.score-fill');
+            originalBars.forEach((bar, i) => {
+                if (exportBars[i]) exportBars[i].style.width = bar.style.width;
+            });
+
+            const opt = {
+                margin: 10,
+                filename: `Brand_DNA_${document.getElementById('brand-name').innerText}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, letterRendering: true, backgroundColor: '#ffffff', windowWidth: 800 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            downloadBtn.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i> 正在匯出 PDF...`;
+            html2pdf().set(opt).from(exportContainer).save().then(() => {
+                exportContainer.innerHTML = '';
+                downloadBtn.innerHTML = `<i class="fas fa-file-pdf mr-2"></i> 下載 PDF 診斷報告`;
+            });
+        };
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>知識拆解 | Knowledge Decomposer & Logic Builder</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Noto+Sans+TC:wght@300;400;500;700;900&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Noto Sans TC', 'sans-serif'],
+                        outfit: ['Outfit', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { 
+            background-color: #F8FAFC; 
+            background-image: radial-gradient(#E2E8F0 1px, transparent 1px);
+            background-size: 24px 24px;
+            font-family: 'Noto Sans TC', sans-serif; 
+        }
+        .glass-card { 
+            background: rgba(255, 255, 255, 0.95); 
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(226, 232, 240, 0.8); 
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.05); 
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94A3B8; }
+
+        /* Tabs */
+        .step-indicator { transition: all 0.2s ease-out; }
+        .step-indicator.active { 
+            background-color: white; 
+            color: #2563EB; /* blue-600 */
+            box-shadow: 0 4px 15px -3px rgba(0,0,0,0.05);
+            border-color: #E2E8F0;
+        }
+
+        /* Table */
+        .logic-table th { @apply bg-slate-50/80 text-[11px] font-bold uppercase tracking-wider text-slate-500 p-4 text-left border-b border-slate-200; }
+        .logic-table td { @apply p-4 text-sm border-b border-slate-100 text-slate-700 font-medium; }
+        .logic-table tr:hover td { @apply bg-slate-50/50; }
+        
+        /* Spinner */
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-left-color: #ffffff;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="antialiased text-slate-800">
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <!-- Header -->
+    <header class="flex flex-col sm:flex-row sm:items-center justify-between mb-10 pb-6 border-b border-slate-200/60 gap-4">
+        <div class="flex items-center gap-5">
+            <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-500/20 text-white">
+                <i class="fas fa-microchip text-3xl"></i>
+            </div>
+            <div>
+                <h1 class="text-3xl font-black font-outfit tracking-tight uppercase leading-tight text-slate-800">Knowledge <span class="text-blue-600">Decomposer</span></h1>
+                <p class="text-sm font-medium text-slate-500 mt-1">漸強實驗室 Crescendo lab - 將直覺經驗轉化為可執行邏輯</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-3">
+            <a href="#" onclick="window.close(); return false;" class="px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-[11px] font-bold text-slate-600 hover:text-blue-600 hover:bg-slate-50 transition-all uppercase tracking-widest shadow-sm flex items-center">
+                <i class="fas fa-arrow-left mr-2"></i> BACK TO TOOLKIT
+            </a>
+            <button class="px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-[11px] font-bold text-slate-600 hover:text-blue-600 hover:bg-slate-50 transition-all uppercase tracking-widest shadow-sm flex items-center">
+                <i class="fas fa-folder-open mr-2"></i> 邏輯庫
+            </button>
+        </div>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10">
+        
+        <!-- 左側：輸入與互動區 -->
+        <div class="lg:col-span-5 space-y-6">
+            
+            <!-- STEP 1: 自然語言描述 -->
+            <div id="input-section" class="glass-card rounded-3xl p-8 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-1.5 h-full bg-blue-500"></div>
+                <div class="flex justify-between items-center mb-6">
+                    <span class="bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest border border-blue-100">Step 01. Context Input</span>
+                </div>
+                <h2 class="text-xl font-black mb-3 text-slate-800">描述情境與處理方式</h2>
+                <p class="text-xs text-slate-500 mb-6 leading-relaxed">請描述一段你「平常會遇到的情境」，以及你通常怎麼處理。不需要格式化，像說話一樣描述即可。</p>
+                
+                <textarea id="raw-input" rows="6" class="w-full rounded-2xl border border-slate-200 bg-slate-50/50 p-5 outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-400 transition-all text-sm font-medium leading-relaxed mb-6 shadow-inner text-slate-700 placeholder-slate-400 resize-none" placeholder="例如：如果客人很久沒買，我通常會傳優惠關心他；但如果他之前有客訴過，我就不會主動打擾..."></textarea>
+                
+                <button id="start-analysis" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold text-sm hover:bg-blue-700 transition-all flex items-center justify-center shadow-lg shadow-blue-500/30 group transform hover:-translate-y-0.5">
+                    <span id="btn-text">啟動知識拆解</span>
+                    <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
+                    <div id="loading-spinner" class="hidden spinner ml-3"></div>
+                </button>
+            </div>
+
+            <!-- STEP 2: 動態追問 (由分析後產生) -->
+            <div id="clarification-section" class="hidden glass-card rounded-3xl p-8 border-l-4 border-indigo-500 bg-indigo-50/30 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl -mr-10 -mt-10"></div>
+                <div class="flex items-center gap-4 mb-6 relative z-10">
+                    <div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-indigo-600 text-xl shadow-sm border border-indigo-100">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-black text-indigo-900 uppercase tracking-widest">AI 邏輯補全</h3>
+                        <p class="text-[11px] text-indigo-600/80 font-bold mt-0.5">發現模糊地帶，請協助補充細節</p>
+                    </div>
+                </div>
+                <div id="questions-list" class="space-y-5 relative z-10">
+                    <!-- Questions will be injected here -->
+                </div>
+                <button id="submit-clarification" class="w-full mt-8 bg-indigo-600 text-white py-3.5 rounded-xl font-bold text-sm hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5 relative z-10">
+                    更新邏輯結構
+                </button>
+            </div>
+
+            <!-- 輔助引導 -->
+            <div class="p-6 bg-gradient-to-br from-slate-50 to-slate-100 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+                <h4 class="text-xs font-bold uppercase tracking-widest text-slate-500 border-b border-slate-200 pb-3 flex items-center">
+                    <i class="fas fa-lightbulb mr-2 text-amber-500"></i> 拆解核心準則
+                </h4>
+                <div class="space-y-3 text-xs text-slate-600 leading-relaxed font-medium">
+                    <p class="flex items-start"><i class="fas fa-check text-emerald-500 mt-1 mr-2"></i> <span><b>明確化角色</b>：大戶、老客戶或高價值客戶具體是誰？</span></p>
+                    <p class="flex items-start"><i class="fas fa-check text-emerald-500 mt-1 mr-2"></i> <span><b>量化門檻</b>：多久沒買算「很久」？10天還是100天？</span></p>
+                    <p class="flex items-start"><i class="fas fa-check text-emerald-500 mt-1 mr-2"></i> <span><b>行為細節</b>：所謂的「處理一下」具體包含哪些步驟？</span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右側：結構化結果區 -->
+        <div class="lg:col-span-7">
+            <div id="output-report" class="glass-card rounded-3xl h-full min-h-[750px] flex flex-col overflow-hidden relative shadow-xl shadow-slate-200/50">
+                
+                <div id="empty-state" class="flex-grow flex flex-col items-center justify-center p-12 text-center">
+                    <div class="relative mb-8">
+                        <div class="absolute inset-0 bg-blue-400 blur-2xl opacity-20 rounded-full"></div>
+                        <div class="w-28 h-28 bg-white rounded-full flex items-center justify-center shadow-xl border border-slate-100 relative z-10 text-blue-500">
+                            <i class="fas fa-project-diagram text-5xl"></i>
+                        </div>
+                    </div>
+                    <h3 class="text-2xl font-black text-slate-800 tracking-tight mb-2">等待知識輸入</h3>
+                    <p class="text-sm text-slate-500 max-w-xs leading-relaxed">在左側描述您的經驗與情境，AI 將自動為您拆解成結構化的決策邏輯。</p>
+                </div>
+
+                <!-- 報告面板 (分析後顯示) -->
+                <div id="report-view" class="hidden flex-col h-full bg-white">
+                    <!-- Tab Menu -->
+                    <div class="flex p-3 bg-slate-50/80 border-b border-slate-100 gap-2">
+                        <button onclick="window.switchTab('logic')" id="tab-logic" class="flex-1 py-3 rounded-xl text-xs font-bold text-slate-500 hover:text-slate-800 transition-all step-indicator active border border-transparent">Decision Table</button>
+                        <button onclick="window.switchTab('sop')" id="tab-sop" class="flex-1 py-3 rounded-xl text-xs font-bold text-slate-500 hover:text-slate-800 transition-all step-indicator border border-transparent">Operations (SOP)</button>
+                        <button onclick="window.switchTab('test')" id="tab-test" class="flex-1 py-3 rounded-xl text-xs font-bold text-slate-500 hover:text-slate-800 transition-all step-indicator border border-transparent">Test Scenarios</button>
+                    </div>
+
+                    <div id="report-content" class="p-8 sm:p-10 flex-grow overflow-y-auto bg-white">
+                        <!-- Content will be injected here -->
+                    </div>
+
+                    <div class="p-5 bg-slate-50 flex justify-end gap-3 border-t border-slate-100">
+                        <button class="px-5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition-all shadow-sm flex items-center">
+                            <i class="fas fa-copy mr-2"></i> 複製規則
+                        </button>
+                        <button class="px-5 py-2.5 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700 transition-all shadow-md shadow-blue-500/20 flex items-center">
+                            <i class="fas fa-file-export mr-2"></i> 匯出系統
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    
+    const model = "gemini-2.5-flash";
+    const apiUrl = `/api/gemini?model=${model}`;
+
+    let currentLogic = null;
+
+    const UI = {
+        btn: document.getElementById('start-analysis'),
+        spinner: document.getElementById('loading-spinner'),
+        btnText: document.getElementById('btn-text'),
+        input: document.getElementById('raw-input'),
+        emptyState: document.getElementById('empty-state'),
+        reportView: document.getElementById('report-view'),
+        reportContent: document.getElementById('report-content'),
+        clarifySection: document.getElementById('clarification-section'),
+        questionsList: document.getElementById('questions-list')
+    };
+
+    // 強化版 JSON 擷取
+    function safeExtractJSON(text) {
+        try {
+            const start = text.indexOf('{');
+            const end = text.lastIndexOf('}');
+            if (start === -1 || end === -1) return null;
+            const jsonPart = text.substring(start, end + 1);
+            return JSON.parse(jsonPart);
+        } catch (e) {
+            console.error("JSON Parsing Error:", e, "Raw Text:", text);
+            return null;
+        }
+    }
+
+    UI.btn.onclick = async () => {
+        const text = UI.input.value.trim();
+        if(!text) return;
+
+        setLoading(true);
+        
+        const systemPrompt = `你是一位資深知識工程師。你的任務是將使用者零散的直覺經驗拆解為「可執行的決策結構」。
+請回傳 JSON 格式。
+
+【分析階段 1：Decomposer】
+1. 提取核心元素：Scenario, Actor, Trigger, Decision, Action, Alternative, Exception。
+2. 識別模糊點 (Ambiguities)：找出文字中未定義、未量化的內容。
+3. 發現缺口 (Gaps)：判斷達成此決策缺少的條件或細節。
+4. 動態提問：針對模糊點與缺口，設計 3 個能協助結構化的問題。
+
+【分析階段 2：Builder】
+1. 結構化表格資料。
+2. SOP 流程步驟。
+3. 測試案例 (正常、邊界、極端)。
+
+請回傳 JSON 結構：
+{
+  "elements": { "scenario": "", "actor": "", "trigger": "", "decision": "", "action": "", "alternative": "", "exception": "" },
+  "ambiguities": ["模糊點1", "模糊點2"],
+  "questions": [
+    { "id": "q1", "field": "threshold", "question": "問題內容", "placeholder": "範例答案" }
+  ],
+  "logic_table": [ { "scenario": "", "condition": "", "threshold": "", "action": "", "constraint": "", "exception": "" } ],
+  "sop": { "trigger": "", "steps": [], "warnings": [] },
+  "test_cases": [ { "type": "正常/邊界/極端", "scenario": "", "expected_result": "" } ]
+}`;
+
+        try {
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    systemInstruction: { parts: [{ text: systemPrompt }] },
+                    contents: [{ parts: [{ text: `這是我的操作經驗描述，請幫我提取並結構化：\n\n"${text}"` }] }],
+                    generationConfig: { responseMimeType: "application/json", temperature: 0.1 }
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`API 請求失敗: ${response.status}`);
+            }
+
+            const result = await response.json();
+            const rawText = result.candidates[0].content.parts[0].text;
+            currentLogic = safeExtractJSON(rawText);
+            
+            if (!currentLogic) {
+                throw new Error("無法解析 AI 回傳的 JSON 資料");
+            }
+            
+            renderClarification(currentLogic.questions);
+            renderReport('logic');
+
+        } catch (err) {
+            console.error(err);
+            alert("拆解失敗，請檢查 API Key 或網路狀態。錯誤訊息：" + err.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    function setLoading(isLoading) {
+        UI.btn.disabled = isLoading;
+        if(isLoading) {
+            UI.spinner.classList.remove('hidden');
+            UI.btnText.innerText = "正在拆解邏輯...";
+        } else {
+            UI.spinner.classList.add('hidden');
+            UI.btnText.innerText = "啟動知識拆解";
+        }
+    }
+
+    function renderClarification(questions) {
+        if (!questions || questions.length === 0) {
+            UI.clarifySection.classList.add('hidden');
+            return;
+        }
+        
+        UI.clarifySection.classList.remove('hidden');
+        UI.questionsList.innerHTML = '';
+        questions.forEach(q => {
+            const div = document.createElement('div');
+            div.innerHTML = `
+                <label class="block text-xs font-bold text-indigo-900 mb-2 leading-relaxed">${q.question}</label>
+                <input type="text" class="w-full bg-white border border-indigo-100 rounded-xl px-4 py-3 text-sm outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-400 transition-all shadow-sm text-slate-700 placeholder-slate-300" placeholder="${q.placeholder}">
+            `;
+            UI.questionsList.appendChild(div);
+        });
+    }
+
+    function renderReport(tab) {
+        UI.emptyState.classList.add('hidden');
+        UI.reportView.classList.remove('hidden');
+        UI.reportView.style.display = 'flex';
+        
+        let html = '';
+        if(tab === 'logic') {
+            html = `
+                <section class="animate-fade-in">
+                    <div class="flex items-center justify-between mb-6">
+                        <h4 class="text-xs font-black text-slate-800 uppercase tracking-widest flex items-center">
+                            <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center mr-3"><i class="fas fa-table"></i></div>
+                            Decision Matrix
+                        </h4>
+                    </div>
+                    <div class="overflow-x-auto rounded-2xl border border-slate-200 shadow-sm bg-white">
+                        <table class="logic-table w-full">
+                            <thead>
+                                <tr>
+                                    <th>Condition</th>
+                                    <th>Threshold</th>
+                                    <th>Action</th>
+                                    <th>Exception</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${(currentLogic.logic_table || []).map(row => `
+                                    <tr>
+                                        <td>${row.condition}</td>
+                                        <td><span class="px-2.5 py-1 bg-amber-50 text-amber-600 border border-amber-200 rounded-lg text-[10px] font-black">${row.threshold}</span></td>
+                                        <td class="text-blue-600 font-bold">${row.action}</td>
+                                        <td class="text-slate-400 italic text-xs">${row.exception || 'N/A'}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <section class="mt-10 animate-fade-in" style="animation-delay: 0.1s">
+                    <div class="flex items-center justify-between mb-6">
+                        <h4 class="text-xs font-black text-slate-800 uppercase tracking-widest flex items-center">
+                            <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center mr-3"><i class="fas fa-code"></i></div>
+                            Decision Rules
+                        </h4>
+                    </div>
+                    <div class="bg-[#1E293B] rounded-2xl overflow-hidden shadow-lg border border-slate-800">
+                        <div class="bg-slate-800/50 px-4 py-3 flex items-center gap-2 border-b border-slate-700/50">
+                            <div class="w-3 h-3 rounded-full bg-red-500/80"></div>
+                            <div class="w-3 h-3 rounded-full bg-amber-500/80"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-500/80"></div>
+                            <span class="ml-2 text-[10px] font-mono text-slate-400">decision_engine.js</span>
+                        </div>
+                        <div class="p-6 font-mono text-[12px] text-blue-300 leading-loose">
+                            <p><span class="text-pink-400">IF</span> (${currentLogic.elements?.trigger || ''})</p>
+                            <p class="pl-6"><span class="text-pink-400">AND</span> (NOT ${currentLogic.elements?.exception || 'special_constraints'})</p>
+                            <p class="pl-6"><span class="text-pink-400">THEN</span> ${currentLogic.elements?.action || ''}</p>
+                            <p class="pl-6 text-slate-500">// Auto-generated by Logic Engine</p>
+                            <p><span class="text-pink-400">ELSE</span> ${currentLogic.elements?.alternative || 'do_nothing'}</p>
+                        </div>
+                    </div>
+                </section>
+            `;
+        } else if(tab === 'sop') {
+            html = `
+                <section class="space-y-6 animate-fade-in">
+                    <div class="flex items-center gap-5 bg-gradient-to-r from-blue-50 to-transparent p-6 rounded-3xl border border-blue-100/50">
+                        <div class="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
+                            <i class="fas fa-bolt text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-1">Trigger Event / 觸發事件</p>
+                            <p class="text-base font-bold text-slate-800">${currentLogic.sop?.trigger || ''}</p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4 pt-4">
+                        <h4 class="text-xs font-black text-slate-800 uppercase tracking-widest pl-2 flex items-center">
+                            <i class="fas fa-list-ul text-slate-400 mr-2"></i> Operation Steps / 執行步驟
+                        </h4>
+                        ${(currentLogic.sop?.steps || []).map((step, i) => `
+                            <div class="flex gap-5 p-5 bg-white border border-slate-200 rounded-2xl hover:shadow-md hover:border-blue-300 transition-all group">
+                                <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-xs font-black text-slate-500 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-inner">${i+1}</div>
+                                <p class="text-sm font-medium text-slate-700 pt-1.5">${step}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <div class="p-6 bg-red-50/80 rounded-3xl border border-red-100 mt-8">
+                        <p class="text-xs font-black text-red-600 uppercase tracking-widest mb-4 flex items-center">
+                            <i class="fas fa-exclamation-triangle mr-2"></i> Safety Restrictions / 注意事項
+                        </p>
+                        <ul class="space-y-3">
+                            ${(currentLogic.sop?.warnings || []).map(w => `
+                                <li class="text-sm font-medium text-red-800 flex items-start bg-white/50 p-3 rounded-xl border border-red-100/50">
+                                    <span class="mt-1 mr-3 text-red-500"><i class="fas fa-times-circle"></i></span> 
+                                    <span class="leading-relaxed">${w}</span>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                </section>
+            `;
+        } else if(tab === 'test') {
+            html = `
+                <section class="space-y-6 animate-fade-in">
+                    <div class="flex items-center justify-between bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                        <p class="text-xs text-slate-600 font-medium flex items-center">
+                            <i class="fas fa-robot text-blue-500 mr-2 text-lg"></i>
+                            AI 自動模擬三種極端情境，協助驗證邏輯完整性
+                        </p>
+                    </div>
+                    <div class="grid grid-cols-1 gap-5">
+                        ${(currentLogic.test_cases || []).map(tc => `
+                            <div class="p-6 rounded-3xl border border-slate-200 bg-white shadow-sm hover:shadow-md transition-all space-y-4">
+                                <div class="flex justify-between items-center border-b border-slate-100 pb-4">
+                                    <span class="px-3 py-1.5 ${tc.type === '正常' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-amber-50 text-amber-600 border-amber-200'} border rounded-lg text-[11px] font-black uppercase tracking-wider flex items-center">
+                                        <i class="fas ${tc.type === '正常' ? 'fa-check' : 'fa-exclamation-triangle'} mr-1.5"></i> ${tc.type} CASE
+                                    </span>
+                                </div>
+                                <div class="space-y-2 pt-2">
+                                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Scenario Description</p>
+                                    <p class="text-sm font-bold text-slate-800 leading-relaxed">${tc.scenario}</p>
+                                </div>
+                                <div class="p-4 bg-slate-50 rounded-xl border border-slate-100 flex items-start gap-3 mt-4">
+                                    <i class="fas fa-arrow-right text-blue-500 mt-0.5"></i>
+                                    <div>
+                                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Expected Result</p>
+                                        <p class="text-sm font-bold text-blue-700">${tc.expected_result}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </section>
+            `;
+        }
+        
+        UI.reportContent.innerHTML = html;
+
+        // Update tabs style
+        document.querySelectorAll('.step-indicator').forEach(t => t.classList.remove('active'));
+        document.getElementById(`tab-${tab}`).classList.add('active');
+    }
+
+    window.switchTab = function(tab) {
+        renderReport(tab);
+    }
+</script>
+
+</body>
+</html>

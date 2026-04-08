@@ -356,24 +356,9 @@ app.get('/api/sessions/:workshopId/:groupId/:step', (req, res) => {
 
 // ── start ─────────────────────────────────────────────────────────────────────
 
-if (process.env.NODE_ENV !== "production" && !process.env.VERCEL) {
-  const { createServer: createViteServer } = await import('vite');
-  const vite = await createViteServer({
-    server: { middlewareMode: true },
-    appType: "spa",
-  });
-  app.use(vite.middlewares);
-} else if (!process.env.VERCEL) {
-  const distPath = join(process.cwd(), 'dist');
-  app.use(express.static(distPath));
-  app.get('*', (req, res) => {
-    res.sendFile(join(distPath, 'index.html'));
-  });
-}
-
 if (!process.env.VERCEL) {
-  const PORT = process.env.PORT || 3000;
-  app.listen(PORT, "0.0.0.0", () => console.log(`Server running at http://localhost:${PORT}`));
+  const PORT = process.env.API_PORT || 3001;
+  app.listen(PORT, () => console.log(`API server running at http://localhost:${PORT}`));
 }
 
 export default app;

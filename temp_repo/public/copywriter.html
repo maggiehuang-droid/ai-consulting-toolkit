@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>爆款文案產生器 | 漸強實驗室 Crescendo lab</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Outfit, JetBrains Mono, Noto Sans TC -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Noto+Sans+TC:wght@300;400;500;600;700;900&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        // Crescendo Lab Brand Colors
+                        crescendo: {
+                            blue: '#4586F0',    // Pantone 2727 C
+                            tech: '#1F49A3',    // Pantone 7687 C
+                            light: '#B5D1FE',   // Gradient start
+                        },
+                        cloud: {
+                            white: '#F6F8F9',   // Background
+                        },
+                        data: {
+                            black: '#222A36',   // Main Text
+                        },
+                        modern: {
+                            gray: '#36393D',    // Secondary Text
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Noto Sans TC', 'sans-serif'],
+                        outfit: ['Outfit', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { 
+            background-color: #F6F8F9; /* Cloud White */
+            color: #222A36; /* Data Black */
+        }
+        
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb { background: #B5D1FE; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #4586F0; }
+
+        /* 自定義拉桿 (Slider) 樣式 - 漸強藍 */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 18px;
+            width: 18px;
+            border-radius: 50%;
+            background: #ffffff;
+            border: 2.5px solid #4586F0; /* Crescendo Blue */
+            cursor: pointer;
+            margin-top: -6px;
+            box-shadow: 0 2px 4px rgba(69,134,240,0.2);
+            transition: transform 0.1s;
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 6px;
+            cursor: pointer;
+            background: #e2e8f0;
+            border-radius: 3px;
+        }
+        input[type=range]:focus { outline: none; }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 1);
+            border: 1px solid rgba(181, 209, 254, 0.3); /* Light Crescendo Blue border */
+            box-shadow: 0 12px 32px -12px rgba(34, 42, 54, 0.08); /* Soft Data Black shadow */
+        }
+
+        .step-badge {
+            background: linear-gradient(135deg, #4586F0 0%, #1F49A3 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .spinner {
+            border: 4px solid rgba(69, 134, 240, 0.1);
+            border-left-color: #4586F0;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="antialiased">
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    
+    <!-- Header -->
+    <header class="flex flex-col sm:flex-row sm:items-center justify-between mb-10 pb-6 border-b border-gray-200/60 gap-4">
+        <div class="flex items-center space-x-4 sm:space-x-5">
+            <div class="w-16 h-16 sm:w-20 sm:h-20 bg-white rounded-2xl shadow-sm border border-gray-100 flex-shrink-0 flex items-center justify-center overflow-hidden">
+                <img src="https://i.ibb.co/C3DdDPz0/bluepen.png" alt="文案產生器圖示" class="w-full h-full object-contain scale-[1.6] drop-shadow-sm">
+            </div>
+            <div>
+                <h1 class="text-2xl sm:text-3xl font-bold font-outfit text-data-black tracking-tight">AI Copywriting <span class="text-crescendo-blue">Generator</span></h1>
+                <p class="text-sm font-medium text-modern-gray mt-1.5">漸強實驗室 Crescendo lab - 爆款文案公式</p>
+            </div>
+        </div>
+        <a href="#" onclick="window.close(); return false;" class="text-sm text-modern-gray hover:text-crescendo-blue font-bold font-outfit flex items-center transition-colors bg-white px-4 py-2.5 rounded-xl border border-gray-200 shadow-sm hover:shadow">
+            <i class="fas fa-arrow-left mr-2"></i> BACK TO TOOLKIT
+        </a>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10">
+        
+        <!-- 左側設定表單 -->
+        <div class="lg:col-span-7 space-y-8">
+            
+            <!-- STEP 1: 參考素材 -->
+            <div class="glass-card rounded-2xl p-6 sm:p-8 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-1.5 h-full bg-crescendo-blue"></div>
+                <h2 class="text-xl font-bold mb-6 flex items-center text-data-black">
+                    <span class="step-badge text-2xl mr-3"><i class="fas fa-chart-line"></i></span>
+                    <span class="font-outfit mr-2 text-crescendo-blue">STEP 1</span> 爆款邏輯拆解
+                </h2>
+                <div class="space-y-3">
+                    <label class="block text-sm font-semibold text-gray-700">提供一篇熱門貼文的「網址連結」或「直接貼上內文」，讓 AI 萃取底層邏輯：</label>
+                    <textarea id="ref-text" rows="3" class="w-full rounded-xl border-gray-200 shadow-sm focus:border-crescendo-blue focus:ring focus:ring-crescendo-light/50 bg-white p-4 transition-all text-sm leading-relaxed" placeholder="請貼上想模仿的爆款貼文連結或直接貼上內文..."></textarea>
+                    <p class="text-xs text-gray-500 font-mono flex items-center"><i class="fas fa-info-circle mr-1.5 text-gray-400"></i> 若貼文設為私人或需登入，AI 可能無法讀取連結，請改用貼上內文。</p>
+                </div>
+            </div>
+
+            <!-- STEP 2: 品牌調性靈魂 -->
+            <div class="glass-card rounded-2xl p-6 sm:p-8 relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-1.5 h-full bg-crescendo-tech"></div>
+                <h2 class="text-xl font-bold mb-6 flex items-center text-data-black">
+                    <span class="step-badge text-2xl mr-3"><i class="fas fa-id-badge"></i></span>
+                    <span class="font-outfit mr-2 text-crescendo-tech">STEP 2</span> 注入品牌調性靈魂
+                    <span class="ml-3 text-xs bg-red-50 text-red-600 border border-red-100 px-2.5 py-1 rounded-md font-mono shadow-sm">Anti-AI 引擎啟動</span>
+                </h2>
+                
+                <div class="space-y-8">
+                    <!-- 快速人設範本 -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-3">懶得想？直接套用熱門人設範本：</label>
+                        <div class="flex flex-wrap gap-3">
+                            <button type="button" id="preset-coach" class="px-4 py-2 text-sm font-medium bg-white border border-gray-200 rounded-xl hover:border-crescendo-blue hover:text-crescendo-blue hover:bg-blue-50/50 transition-all shadow-sm">🏋️ 嚴格教練</button>
+                            <button type="button" id="preset-bestie" class="px-4 py-2 text-sm font-medium bg-white border border-gray-200 rounded-xl hover:border-crescendo-blue hover:text-crescendo-blue hover:bg-blue-50/50 transition-all shadow-sm">👯‍♀️ 閨蜜推坑</button>
+                            <button type="button" id="preset-tech" class="px-4 py-2 text-sm font-medium bg-white border border-gray-200 rounded-xl hover:border-crescendo-blue hover:text-crescendo-blue hover:bg-blue-50/50 transition-all shadow-sm">👨‍💻 毒舌直男</button>
+                        </div>
+                    </div>
+
+                    <!-- 角色設定 -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">你是誰？ (也可手動修改)</label>
+                        <input type="text" id="role-text" class="w-full rounded-xl border-gray-200 shadow-sm focus:border-crescendo-blue focus:ring focus:ring-crescendo-light/50 bg-white p-3.5 text-sm font-medium placeholder-gray-400 transition-all" placeholder="擁有 10 年經驗、專注於成效轉換的資深社群行銷教練">
+                    </div>
+
+                    <!-- 語氣參數拉桿 (8個維度) - 折疊收納 -->
+                    <details class="group border border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm">
+                        <summary class="flex justify-between items-center font-semibold cursor-pointer list-none p-4 hover:bg-gray-50 transition-colors text-gray-700 text-sm">
+                            <span class="flex items-center"><i class="fas fa-sliders-h w-5 text-crescendo-blue mr-2"></i>進階語氣調校 (8 大防 AI 參數)</span>
+                            <span class="transition group-open:rotate-180">
+                                <i class="fas fa-chevron-down text-gray-400"></i>
+                            </span>
+                        </summary>
+                        <div class="p-6 border-t border-gray-100 bg-gray-50/30">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-6">
+                                <div>
+                                    <div class="flex justify-between items-center mb-2">
+                                        <label class="text-xs font-semibold text-gray-600">口語/接地氣</label>
+                                        <span class="text-xs font-mono text-crescendo-tech font-bold bg-blue-50 px-2 py-0.5 rounded" id="val-casual">90%</span>
+                                    </div>
+                                    <input type="range" id="slider-casual" min="0" max="100" value="90" oninput="document.getElementById('val-casual').innerText = this.value + '%'">
+                                </div>
+                                <div>
+                                    <div class="flex justify-between items-center mb-2">
+                                        <label class="text-xs font-semibold text-gray-600">真人碎念感 (防工整)</label>
+                                        <span class="text-xs font-mono text-crescendo-tech font-bold bg-blue-50 px-2 py-0.5 rounded" id="val-human">85%</span>
+                                    </div>
+                                    <input type="range" id="slider-human" min="0" max="100" value="85" oninput="document.getElementById('val-human').innerText = this.value + '%'">
+                                </div>
+                                <div>
+                                    <div class="flex justify-between items-center mb-2">
+                                        <label class="text-xs font-semibold text-gray-600">具象化程度 (拒絕空泛)</label>
+                                        <span class="text-xs font-mono text-crescendo-tech font-bold bg-blue-50 px-2 py-0.5 rounded" id="val-concrete">95%</span>
+                                    </div>
+                                    <input type="range" id="slider-concrete" min="0" max="100" value="95" oninput="document.getElementById('val-concrete').innerText = this.value + '%'">
+                                </div>
+                                <div>
+                                    <div class="flex justify-between items-center mb-2">
+                                        <label class="text-xs font-semibold text-gray-600">毒舌/犀利</label>
+                                        <span class="text-xs font-mono text-crescendo-tech font-bold bg-blue-50 px-2 py-0.5 rounded" id="val-toxic">60%</span>
+                                    </div>
+                                    <input type="range" id="slider-toxic" min="0" max="100" value="60" oninput="document.getElementById('val-toxic').innerText = this.value + '%'">
+                                </div>
+                                <div>
+                                    <div class="flex justify-between items-center mb-2">
+                                        <label class="text-xs font-semibold text-gray-600">情感渲染力</label>
+                                        <span class="text-xs font-mono text-crescendo-tech font-bold bg-blue-50 px-2 py-0.5 rounded" id="val-emotion">80%</span>
+                                    </div>
+                                    <input type="range" id="slider-emotion" min="0" max="100" value="80" oninput="document.getElementById('val-emotion').innerText = this.value + '%'">
+                                </div>
+                                <div>
+                                    <div class="flex justify-between items-center mb-2">
+                                        <label class="text-xs font-semibold text-gray-600">專業/權威感</label>
+                                        <span class="text-xs font-mono text-crescendo-tech font-bold bg-blue-50 px-2 py-0.5 rounded" id="val-pro">70%</span>
+                                    </div>
+                                    <input type="range" id="slider-pro" min="0" max="100" value="70" oninput="document.getElementById('val-pro').innerText = this.value + '%'">
+                                </div>
+                                <div>
+                                    <div class="flex justify-between items-center mb-2">
+                                        <label class="text-xs font-semibold text-gray-600">幽默感</label>
+                                        <span class="text-xs font-mono text-crescendo-tech font-bold bg-blue-50 px-2 py-0.5 rounded" id="val-humor">50%</span>
+                                    </div>
+                                    <input type="range" id="slider-humor" min="0" max="100" value="50" oninput="document.getElementById('val-humor').innerText = this.value + '%'">
+                                </div>
+                                <div>
+                                    <div class="flex justify-between items-center mb-2">
+                                        <label class="text-xs font-semibold text-gray-600">直白程度</label>
+                                        <span class="text-xs font-mono text-crescendo-tech font-bold bg-blue-50 px-2 py-0.5 rounded" id="val-direct">90%</span>
+                                    </div>
+                                    <input type="range" id="slider-direct" min="0" max="100" value="90" oninput="document.getElementById('val-direct').innerText = this.value + '%'">
+                                </div>
+                            </div>
+                        </div>
+                    </details>
+                </div>
+            </div>
+
+            <!-- STEP 3: 任務定義卡 -->
+            <div class="glass-card rounded-2xl p-6 sm:p-8 relative overflow-hidden">
+                 <div class="absolute top-0 left-0 w-1.5 h-full bg-data-black"></div>
+                 <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
+                     <h2 class="text-xl font-bold flex items-center text-data-black">
+                        <span class="step-badge text-2xl mr-3"><i class="fas fa-clipboard-list"></i></span>
+                        <span class="font-outfit mr-2 text-data-black">STEP 3</span> 行銷任務定義卡
+                    </h2>
+                    <button type="button" id="magic-fill-btn" class="text-xs font-bold bg-gray-100 text-gray-600 px-4 py-2 rounded-xl hover:bg-gray-200 hover:text-data-black transition-colors flex items-center shadow-sm">
+                        <i class="fas fa-magic mr-1.5"></i> 填入範例
+                    </button>
+                 </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">產品或服務內容</label>
+                        <textarea id="task-product" rows="2" class="w-full rounded-xl border-gray-200 shadow-sm focus:border-crescendo-blue focus:ring focus:ring-crescendo-light/50 bg-white p-3.5 text-sm transition-all" placeholder="例如：主打幫助小白30天掌握ChatGPT指令的線上課程"></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">對誰說話？(受眾)</label>
+                        <input type="text" id="task-audience" class="w-full rounded-xl border-gray-200 shadow-sm focus:border-crescendo-blue focus:ring focus:ring-crescendo-light/50 bg-white p-3.5 text-sm transition-all" placeholder="例如：想轉職卻不敢行動的30歲上班族">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">希望他們做什麼？(目標)</label>
+                        <input type="text" id="task-goal" class="w-full rounded-xl border-gray-200 shadow-sm focus:border-crescendo-blue focus:ring focus:ring-crescendo-light/50 bg-white p-3.5 text-sm transition-all" placeholder="例如：點擊下方連結領取限時早鳥優惠">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">格式或字數限制</label>
+                        <input type="text" id="task-constraint" class="w-full rounded-xl border-gray-200 shadow-sm focus:border-crescendo-blue focus:ring focus:ring-crescendo-light/50 bg-white p-3.5 text-sm placeholder-gray-400 transition-all" placeholder="繁體中文，適合發佈在 Facebook，字數約 300-500 字，禁用 Hashtag 海。">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button id="generate-btn" class="w-full bg-crescendo-blue hover:bg-crescendo-tech text-white font-bold font-outfit py-4 px-8 rounded-2xl transition-all transform hover:-translate-y-1 shadow-lg hover:shadow-xl flex justify-center items-center text-lg mt-4">
+                <i class="fas fa-bolt mr-2"></i> GENERATE COPY
+            </button>
+            <p id="error-msg" class="text-red-500 text-center font-bold hidden mt-2"></p>
+        </div>
+
+        <!-- 右側產出區域 -->
+        <div class="lg:col-span-5">
+            <div class="glass-card rounded-2xl h-full flex flex-col shadow-lg sticky top-8" style="max-height: calc(100vh - 4rem);">
+                
+                <div class="p-5 border-b border-gray-100 flex justify-between items-center bg-white rounded-t-2xl">
+                    <h3 class="font-bold text-data-black font-outfit flex items-center text-lg">
+                        <i class="fas fa-robot text-crescendo-blue mr-2.5"></i> AI OUTPUT
+                    </h3>
+                    <button id="copy-btn" class="text-sm font-bold bg-white border border-gray-200 hover:bg-crescendo-light/30 hover:text-crescendo-tech hover:border-crescendo-light text-modern-gray px-4 py-2 rounded-xl transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center" disabled>
+                        <i class="fas fa-copy mr-1.5"></i> 複製內容
+                    </button>
+                </div>
+
+                <div class="p-6 sm:p-8 flex-grow overflow-y-auto bg-gray-50/30 rounded-b-2xl">
+                    
+                    <!-- 載入中動畫 -->
+                    <div id="loading" class="hidden flex flex-col items-center justify-center h-full min-h-[300px]">
+                        <div class="spinner mb-5"></div>
+                        <p class="text-crescendo-tech font-bold font-outfit text-lg animate-pulse">Analyzing & Generating...</p>
+                        <p class="text-sm text-modern-gray mt-3 text-center leading-relaxed">正在為您注入品牌靈魂與反 AI 味參數<br>（去除陳腔濫調中...）</p>
+                    </div>
+
+                    <!-- 初始狀態 -->
+                    <div id="init-state" class="flex flex-col items-center justify-center h-full min-h-[300px] text-center px-4">
+                        <img src="https://i.ibb.co/C3DdDPz0/bluepen.png" alt="原子筆圖示" class="w-32 h-32 object-contain drop-shadow-sm -mb-4 transform hover:scale-105 transition-transform duration-300">
+                        <h4 class="text-data-black font-bold mb-3 text-xl">等待任務指令</h4>
+                        <p class="text-sm text-modern-gray leading-relaxed max-w-xs">填寫左側的設定，點擊 Generate 按鈕。<br>系統將嚴格把關，產生具備高轉換率<br>且<strong class="text-crescendo-tech">「完全像真人說話」</strong>的爆款文案。</p>
+                    </div>
+
+                    <!-- 產出內容 (可編輯) -->
+                    <div id="result-content" class="hidden flex-col h-full">
+                        <div class="mb-5 p-4 bg-crescendo-light/20 rounded-xl flex items-start text-sm text-crescendo-tech border border-crescendo-light/50">
+                            <i class="fas fa-edit mt-0.5 mr-2.5"></i>
+                            <p class="leading-relaxed">內容已生成！您可以<strong>直接點擊下方文字進行微調與修改</strong>，確認無誤後再點擊右上角複製。</p>
+                        </div>
+                        <div id="output-text" contenteditable="true" class="text-data-black text-base outline-none whitespace-pre-wrap font-sans flex-grow hover:bg-white focus:bg-white focus:ring-2 focus:ring-crescendo-light rounded-xl p-5 -mx-5 sm:mx-0 transition-all leading-relaxed"></div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const generateBtn = document.getElementById('generate-btn');
+        const copyBtn = document.getElementById('copy-btn');
+        const errorMsg = document.getElementById('error-msg');
+        
+        const loadingSection = document.getElementById('loading');
+        const initStateSection = document.getElementById('init-state');
+        const resultSection = document.getElementById('result-content');
+        const outputText = document.getElementById('output-text');
+
+        // --- 一鍵人設範本邏輯 ---
+        const roleText = document.getElementById('role-text');
+        
+        function updateSliders(values) {
+            Object.keys(values).forEach(key => {
+                const slider = document.getElementById(`slider-${key}`);
+                const valDisplay = document.getElementById(`val-${key}`);
+                if(slider && valDisplay) {
+                    slider.value = values[key];
+                    valDisplay.innerText = values[key] + '%';
+                }
+            });
+        }
+
+        document.getElementById('preset-coach').addEventListener('click', () => {
+            roleText.value = '擁有 10 年經驗、專注於成效轉換的嚴格社群行銷教練';
+            updateSliders({ casual: 80, human: 85, concrete: 95, toxic: 70, emotion: 60, pro: 95, humor: 30, direct: 100 });
+        });
+
+        document.getElementById('preset-bestie').addEventListener('click', () => {
+            roleText.value = '超愛買、喜歡分享好物給朋友的熱情閨蜜';
+            updateSliders({ casual: 100, human: 100, concrete: 80, toxic: 10, emotion: 100, pro: 30, humor: 80, direct: 85 });
+        });
+
+        document.getElementById('preset-tech').addEventListener('click', () => {
+            roleText.value = '講求數據與邏輯、講話一針見血的科技業直男';
+            updateSliders({ casual: 60, human: 70, concrete: 90, toxic: 85, emotion: 20, pro: 100, humor: 50, direct: 100 });
+        });
+
+        // --- 一鍵填入範例邏輯 ---
+        document.getElementById('magic-fill-btn').addEventListener('click', () => {
+            document.getElementById('ref-text').value = '（請貼上你想模仿的熱門貼文網址或內文）';
+            document.getElementById('task-product').value = '專為熬夜上班族設計的「極光精華液」，主打 7 天提亮膚色，保濕不黏膩。';
+            document.getElementById('task-audience').value = '每天加班到很晚，隔天氣色很差但又沒時間保養的 25-35 歲粉領族。';
+            document.getElementById('task-goal').value = '點擊連結領取 3 天免費試用包，只需自付運費 99 元。';
+        });
+
+        generateBtn.addEventListener('click', async () => {
+            // 1. 收集資料
+            const refText = document.getElementById('ref-text').value.trim();
+            const role = document.getElementById('role-text').value.trim() || document.getElementById('role-text').placeholder;
+            
+            const p_casual = document.getElementById('slider-casual').value;
+            const p_human = document.getElementById('slider-human').value;
+            const p_concrete = document.getElementById('slider-concrete').value;
+            const p_toxic = document.getElementById('slider-toxic').value;
+            const p_emotion = document.getElementById('slider-emotion').value;
+            const p_pro = document.getElementById('slider-pro').value;
+            const p_humor = document.getElementById('slider-humor').value;
+            const p_direct = document.getElementById('slider-direct').value;
+
+            const product = document.getElementById('task-product').value.trim();
+            const audience = document.getElementById('task-audience').value.trim();
+            const goal = document.getElementById('task-goal').value.trim();
+            const constraint = document.getElementById('task-constraint').value.trim() || document.getElementById('task-constraint').placeholder;
+
+            // 2. 基本驗證
+            if (!refText) {
+                showError("請在 STEP 1 填寫「爆款參考素材」，讓 AI 有模仿與分析的依據。");
+                document.getElementById('ref-text').focus();
+                return;
+            }
+            if (!product || !audience || !goal) {
+                showError("請完成 STEP 3 的任務定義卡（產品、受眾、目標為必填）。");
+                return;
+            }
+            
+            hideError();
+
+            // 3. UI 狀態切換
+            generateBtn.disabled = true;
+            generateBtn.innerHTML = `<i class="fas fa-circle-notch fa-spin mr-2"></i> GENERATING...`;
+            initStateSection.classList.add('hidden');
+            resultSection.classList.add('hidden');
+            loadingSection.classList.remove('hidden');
+            copyBtn.disabled = true;
+
+            // 4. 構建 System Prompt (超強 Anti-AI 設定)
+            const systemContext = `你是一位業界頂尖的「爆款文案策略師與真人寫手」。請嚴格依照以下步驟，為使用者量身打造一篇高轉換率的文案：
+
+【STEP 1：深度拆解】
+分析使用者提供的「爆款參考素材」（網址或純文字），萃取其底層邏輯：鉤子(Hook)、情緒價值、段落結構、分享動機。若是網址，請盡力聯網檢索讀取。
+
+【STEP 2：注入品牌調性靈魂】
+請完全代入以下角色，進行「擬真人類化」處理：
+- 角色設定：${role}
+- 語氣特徵設定（滿分100%）：
+  口語/接地氣 ${p_casual}%、真人碎念感 ${p_human}%、具象化程度 ${p_concrete}%、毒舌/犀利 ${p_toxic}%、情感渲染力 ${p_emotion}%、專業權威感 ${p_pro}%、幽默感 ${p_humor}%、直白程度 ${p_direct}%
+
+【🚨 絕對禁止的 AI 味特徵 (STRICT ANTI-AI RULES)】
+你必須完全像個「在網路上打字的人類」，只要違反以下任何一點，文案就是失敗的：
+1. 禁用陳腔濫調：絕對不可出現「在這個快節奏的時代」、「想像一下」、「你是否曾經」、「揭秘」、「無與倫比」、「讓我們先來看看」、「總而言之」、「深入探討」、「不可否認」、「為您帶來」等八股文詞彙。
+2. 拒絕排比與過度結構化：不要寫出過度工整、完美的段落。社群文案不需要「一、二、三」的死板條列，除非是列舉產品特點，否則請用「而且」、「還有」等口語連接。
+3. 碎念與不完美：加入人類打字時的語氣詞（如：說真的、老實說、拜託、欸不是），長短句極度交錯，可以帶一點主觀情緒或停頓（例如用「...」或「？」）。
+4. 具體名詞取代形容詞：不要說「提供極致的體驗」，要說「讓你週末多睡兩小時」。具象化參數越高，畫面感要越強烈。
+5. 極簡 Emoji：整篇文章最多 1-2 個 Emoji，且【絕對禁止】在每段開頭當作項目符號使用。人類不會在每一句話前面都放表情符號。
+
+【STEP 3：組合公式，精準輸出】
+請結合 STEP 1 的拆解邏輯與使用者的「任務定義」，撰寫全新文案。必須遵守：
+1. 1秒鉤子：首句極具張力（可善用反常識或痛點），強制讀者停留。
+2. 閱讀節奏：強制使用短句，切碎段落，不要有超過四行的大段落。
+3. 反直覺觀點：加入打破常規的論點，創造記憶點與留言討論度。
+4. 強力 CTA：結尾給出明確、單一的行動呼籲。
+
+請使用以下格式輸出回覆：
+
+### 💡 參考文案邏輯拆解
+(列點說明從參考素材中萃取出的「鉤子、情緒、結構」邏輯，3-4句話即可)
+
+### 🚀 為您打造的專屬爆款文案
+(直接輸出根據任務定義寫出的最終文案內容，請嚴格遵守 Anti-AI 規則與限制條件)`;
+
+            // 構建 User Prompt
+            const userRequest = `
+【使用者任務定義】
+- 產品/服務說明：${product}
+- 目標受眾：${audience}
+- 核心目標：${goal}
+- 限制條件：${constraint}
+
+【爆款參考素材 (請拆解此素材的邏輯)】
+${refText}
+`;
+
+            // 5. 呼叫 Gemini API
+            
+            const apiUrl = "/api/gemini?model=gemini-2.5-flash";
+
+            const payload = {
+                systemInstruction: { parts: [{ text: systemContext }] },
+                contents: [{ parts: [{ text: userRequest }] }],
+                tools: [{ google_search: {} }], // 開啟 Google 搜尋工具
+                generationConfig: {
+                    temperature: 0.8, // 調高溫度增加人味與創意
+                    maxOutputTokens: 2048,
+                }
+            };
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API 請求失敗: ${response.status}`);
+                }
+
+                const result = await response.json();
+                const generatedText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+
+                if (generatedText) {
+                    outputText.textContent = generatedText;
+                    loadingSection.classList.add('hidden');
+                    resultSection.classList.remove('hidden');
+                    copyBtn.disabled = false;
+                } else {
+                    throw new Error('無法解析 AI 回應');
+                }
+
+            } catch (error) {
+                console.error("生成錯誤:", error);
+                loadingSection.classList.add('hidden');
+                initStateSection.classList.remove('hidden');
+                showError("生成失敗，請檢查網路連線或稍後再試。");
+            } finally {
+                generateBtn.disabled = false;
+                generateBtn.innerHTML = `<i class="fas fa-bolt mr-2"></i> GENERATE COPY`;
+            }
+        });
+
+        // 複製功能
+        copyBtn.addEventListener('click', () => {
+            // 使用 innerText 抓取以精準保留使用者的手動修改與換行
+            const textToCopy = outputText.innerText; 
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                const originalHtml = copyBtn.innerHTML;
+                copyBtn.innerHTML = `<i class="fas fa-check text-green-600 mr-1"></i> 已複製`;
+                setTimeout(() => {
+                    copyBtn.innerHTML = originalHtml;
+                }, 2000);
+            }).catch(err => {
+                console.error('複製失敗:', err);
+                const textArea = document.createElement("textarea");
+                textArea.value = textToCopy;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                copyBtn.innerHTML = `<i class="fas fa-check text-green-600 mr-1"></i> 已複製`;
+                setTimeout(() => { copyBtn.innerHTML = `<i class="fas fa-copy mr-1"></i> 複製內容`; }, 2000);
+            });
+        });
+
+        function showError(msg) {
+            errorMsg.textContent = msg;
+            errorMsg.classList.remove('hidden');
+        }
+
+        function hideError() {
+            errorMsg.classList.add('hidden');
+        }
+    });
+</script>
+
+</body>
+</html>
