@@ -6,29 +6,36 @@ import { randomUUID } from 'crypto';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DATA_DIR = join(__dirname, 'data');
-// On Vercel, only /tmp is writable. Reads fall back to bundled data/ files.
-const TMP_DIR = '/tmp';
 
 const app = express();
 app.use(express.json({ limit: '10mb' }));
 
-// ── helpers ──────────────────────────────────────────────────────────────────
+// ── in-memory store ───────────────────────────────────────────────────────────
+// Loaded once at module start from bundled data/ files.
+// On Vercel: all reads/writes stay in memory within the same function instance.
+// On local dev: also writes back to data/ files so data persists across restarts.
+
+const FILES = ['workshops.json', 'groups.json', 'sessions.json', 'members.json'];
+
+const store = {};
+for (const file of FILES) {
+  try {
+    store[file] = JSON.parse(readFileSync(join(DATA_DIR, file), 'utf8'));
+  } catch {
+    store[file] = [];
+  }
+}
 
 function readJSON(file) {
-  // On Vercel: prefer /tmp (written data), fall back to bundled data/ (initial empty arrays)
-  if (process.env.VERCEL) {
-    try {
-      return JSON.parse(readFileSync(join(TMP_DIR, file), 'utf8'));
-    } catch {
-      return JSON.parse(readFileSync(join(DATA_DIR, file), 'utf8'));
-    }
-  }
-  return JSON.parse(readFileSync(join(DATA_DIR, file), 'utf8'));
+  return store[file] ?? [];
 }
 
 function writeJSON(file, data) {
-  const path = process.env.VERCEL ? join(TMP_DIR, file) : join(DATA_DIR, file);
-  writeFileSync(path, JSON.stringify(data, null, 2));
+  store[file] = data;
+  // Local dev: persist to disk so data survives server restarts
+  if (!process.env.VERCEL) {
+    try { writeFileSync(join(DATA_DIR, file), JSON.stringify(data, null, 2)); } catch {}
+  }
 }
 
 // ── workshops ─────────────────────────────────────────────────────────────────
