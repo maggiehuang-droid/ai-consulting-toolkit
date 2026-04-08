@@ -128,7 +128,7 @@ export default function WorkshopList({ listOnly = false }: { listOnly?: boolean 
               AI 顧問工具箱
             </p>
           )}
-          <h1 style={{ fontSize: listOnly ? 24 : 30, fontWeight: 800, margin: 0, color: C.text }}>
+          <h1 style={{ fontSize: listOnly ? 20 : 24, fontWeight: 800, margin: 0, color: C.text }}>
             {listOnly ? "工作坊管理" : "管理後台"}
           </h1>
           {!listOnly && <p style={{ color: C.muted, margin: "6px 0 0", fontSize: 14 }}>建立工作坊、管理小組、查看進度</p>}
@@ -151,9 +151,9 @@ export default function WorkshopList({ listOnly = false }: { listOnly?: boolean 
               { label: "進行中", value: counts.active, color: C.yellow },
               { label: "已完成", value: counts.completed, color: C.green },
             ] as const).map(s => (
-              <Card key={s.label} style={{ textAlign: "center", padding: "18px 20px" }}>
-                <div style={{ fontSize: 28, fontWeight: 800, color: s.color, lineHeight: 1.1 }}>{s.value}</div>
-                <div style={{ fontSize: 12, color: C.muted, marginTop: 5 }}>{s.label}</div>
+              <Card key={s.label} style={{ textAlign: "center", padding: "14px 16px" }}>
+                <div style={{ fontSize: 22, fontWeight: 800, color: s.color, lineHeight: 1.1 }}>{s.value}</div>
+                <div style={{ fontSize: 11, color: C.muted, marginTop: 4 }}>{s.label}</div>
               </Card>
             ))}
           </div>

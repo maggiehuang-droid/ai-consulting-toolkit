@@ -49,7 +49,7 @@ interface AdminLayoutProps {
   title?: string;
 }
 
-const SIDEBAR_W = 200;
+const SIDEBAR_W = 168;
 
 const NAV_ITEMS = [
   {
@@ -105,8 +105,8 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
       <nav style={{
         background: C.panel,
         borderBottom: `1px solid ${C.border}`,
-        padding: "0 28px",
-        height: 56,
+        padding: "0 20px",
+        height: 48,
         display: "flex",
         alignItems: "center",
         position: "sticky",
@@ -124,16 +124,16 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
           <img
             src="https://i.ibb.co/MxgTGTLH/Logo-black.png"
             alt="Crescendo Lab"
-            style={{ height: 24, width: "auto", objectFit: "contain", display: "block" }}
+            style={{ height: 20, width: "auto", objectFit: "contain", display: "block" }}
             referrerPolicy="no-referrer"
           />
         </a>
-        <span style={{ width: 1, height: 18, background: C.border, marginRight: 16 }} />
-        <span style={{ fontWeight: 800, fontSize: 15, color: C.text }}>管理後台</span>
+        <span style={{ width: 1, height: 16, background: C.border, marginRight: 14 }} />
+        <span style={{ fontWeight: 800, fontSize: 13, color: C.text }}>管理後台</span>
         {title && (
           <>
-            <span style={{ color: C.border, margin: "0 8px", fontSize: 16 }}>›</span>
-            <span style={{ color: C.muted, fontSize: 13, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 280 }}>
+            <span style={{ color: C.border, margin: "0 6px", fontSize: 14 }}>›</span>
+            <span style={{ color: C.muted, fontSize: 12, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 280 }}>
               {title}
             </span>
           </>
@@ -144,7 +144,7 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
             marginLeft: "auto",
             color: C.muted,
             textDecoration: "none",
-            fontSize: 13,
+            fontSize: 12,
             fontWeight: 500,
             display: "flex",
             alignItems: "center",
@@ -166,12 +166,12 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
           width: SIDEBAR_W,
           flexShrink: 0,
           background: C.blue,
-          minHeight: "calc(100vh - 56px)",
-          padding: "24px 0",
+          minHeight: "calc(100vh - 48px)",
+          padding: "16px 0",
           position: "sticky",
-          top: 56,
+          top: 48,
           alignSelf: "flex-start",
-          height: "calc(100vh - 56px)",
+          height: "calc(100vh - 48px)",
           overflowY: "auto",
         }}>
           {NAV_ITEMS.map(item => {
@@ -183,12 +183,12 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  gap: 10,
-                  padding: "11px 20px",
-                  margin: "2px 10px",
-                  borderRadius: 10,
+                  gap: 8,
+                  padding: "8px 14px",
+                  margin: "1px 8px",
+                  borderRadius: 8,
                   textDecoration: "none",
-                  fontSize: 14,
+                  fontSize: 13,
                   fontWeight: active ? 700 : 500,
                   color: active ? "#fff" : "rgba(255,255,255,0.7)",
                   background: active ? "rgba(255,255,255,0.18)" : "transparent",
@@ -205,7 +205,7 @@ export default function AdminLayout({ children, title }: AdminLayoutProps) {
         </aside>
 
         {/* Main content */}
-        <main style={{ flex: 1, padding: "32px 36px 80px", minWidth: 0 }}>
+        <main style={{ flex: 1, padding: "24px 28px 60px", minWidth: 0 }}>
           {children}
         </main>
       </div>
@@ -371,8 +371,8 @@ export function Card({
       style={{
         background: C.panel,
         border: `1px solid ${C.border}`,
-        borderRadius: 14,
-        padding: "20px 24px",
+        borderRadius: 12,
+        padding: "16px 20px",
         transition: hoverable ? "border-color 0.15s, box-shadow 0.15s" : undefined,
         ...style,
       }}
