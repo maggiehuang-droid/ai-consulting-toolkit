@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useSession } from "./SessionContext";
 import WorkflowBreakdownWorkflow from "./WorkflowBreakdownWorkflow";
 import PainMapWorkflow from "./PainMapWorkflow";
 import AICollabWorkflow from "./AICollabWorkflow";
@@ -222,16 +223,16 @@ function ToolboxGridPage({ tab, setTab, onBack, onSelectTool, advisorData = {} }
   const getToolStatus = (tool, index) => {
     if (tab !== "advisor") return 'available';
     
-    if (advisorData[tool.id]?.status === 'completed') {
-      return 'completed';
-    }
-    
+    const toolStatus = advisorData[tool.id]?.status;
+    if (toolStatus === 'completed') return 'completed';
+    if (toolStatus === 'in_progress') return 'in_progress';
+
     // It's available if it's the first one, or if the previous one is completed
     const previousTool = ADVISOR_TOOLS[index - 1];
     if (!previousTool || advisorData[previousTool.id]?.status === 'completed') {
       return 'available';
     }
-    
+
     return 'locked';
   };
 
@@ -263,19 +264,12 @@ function ToolboxGridPage({ tab, setTab, onBack, onSelectTool, advisorData = {} }
           </div>
 
           <div style={{ display: "flex", gap: 8 }}>
-            {[
-              { key: "general", label: "AI 通用工具箱" },
-              { key: "advisor", label: "AI 顧問工具箱" },
-            ].map(t => (
-              <button key={t.key} onClick={() => setTab(t.key)} style={{
-                padding: "10px 24px", borderRadius: 9999, border: "none",
-                fontSize: 15, fontWeight: 700, fontFamily: FONT, cursor: "pointer",
-                transition: "all 0.25s ease",
-                background: tab === t.key ? C.blue : C.gray,
-                color: "#fff",
-                boxShadow: tab === t.key ? `0 4px 16px ${C.blue}30` : "none",
-              }}>{t.label}</button>
-            ))}
+            <button onClick={() => setTab("general")} style={{
+              padding: "10px 24px", borderRadius: 9999, border: "none",
+              fontSize: 15, fontWeight: 700, fontFamily: FONT, cursor: "pointer",
+              background: C.blue, color: "#fff",
+              boxShadow: `0 4px 16px ${C.blue}30`,
+            }}>AI 通用工具箱</button>
           </div>
         </div>
       </nav>
@@ -942,11 +936,30 @@ function DefineProblemWorkflow({ tool, onBack, onComplete, advisorData, setAdvis
 }
 
 /* ══════ ROUTER ══════ */
-export default function App() {
-  const [page, setPage] = useState("hero");
+interface AppProps {
+  initialData?: Record<string, { status: string; data: unknown }>;
+  startOnToolbox?: boolean;
+}
+
+export default function App({ initialData, startOnToolbox }: AppProps = {}) {
+  const [page, setPage] = useState(startOnToolbox ? "toolbox" : "hero");
   const [tool, setTool] = useState(null);
-  const [tab, setTab] = useState("general");
-  const [advisorData, setAdvisorData] = useState({});
+  const [tab, setTab] = useState(startOnToolbox ? "advisor" : "general");
+  const [advisorData, setAdvisorData] = useState<Record<string, { status: string; data: unknown }>>(initialData || {});
+  const { saveStep } = useSession();
+
+  // Intercept advisorData updates: when a step becomes "completed", auto-save to API
+  const setAdvisorDataWithSave = (updater: ((prev: Record<string, { status: string; data: unknown }>) => Record<string, { status: string; data: unknown }>) | Record<string, { status: string; data: unknown }>) => {
+    setAdvisorData(prev => {
+      const next = typeof updater === "function" ? updater(prev) : updater;
+      Object.entries(next).forEach(([toolId, toolData]) => {
+        if (toolData?.status === "completed" && prev[toolId]?.status !== "completed") {
+          saveStep(toolId, "completed", toolData.data);
+        }
+      });
+      return next;
+    });
+  };
 
   const handleSelectTool = (t) => {
     if (t.id === "export-report") {
@@ -1000,22 +1013,22 @@ export default function App() {
       {page === "advisor-panel" && tool && <StageIntroductionPage tool={tool} onBack={() => setPage("toolbox")} onStart={handleStartWorkflow} />}
       {page === "advisor-workflow" && tool && tool.id === "define" && <DefineProblemWorkflow tool={tool} onBack={() => setPage("toolbox")} onComplete={(toolId) => {
         setPage("toolbox");
-      }} advisorData={advisorData} setAdvisorData={setAdvisorData} />}
+      }} advisorData={advisorData} setAdvisorData={setAdvisorDataWithSave} />}
       {page === "advisor-workflow" && tool && tool.id === "workflow" && <WorkflowBreakdownWorkflow tool={tool} onBack={() => setPage("toolbox")} onComplete={(toolId) => {
         setPage("toolbox");
-      }} advisorData={advisorData} setAdvisorData={setAdvisorData} />}
+      }} advisorData={advisorData} setAdvisorData={setAdvisorDataWithSave} />}
       {page === "advisor-workflow" && tool && tool.id === "painmap" && <PainMapWorkflow tool={tool} onBack={() => setPage("toolbox")} onComplete={(toolId) => {
         setPage("toolbox");
-      }} advisorData={advisorData} setAdvisorData={setAdvisorData} />}
+      }} advisorData={advisorData} setAdvisorData={setAdvisorDataWithSave} />}
       {page === "advisor-workflow" && tool && tool.id === "ai-collab" && <AICollabWorkflow tool={tool} onBack={() => setPage("toolbox")} onComplete={(toolId) => {
         setPage("toolbox");
-      }} advisorData={advisorData} setAdvisorData={setAdvisorData} />}
+      }} advisorData={advisorData} setAdvisorData={setAdvisorDataWithSave} />}
       {page === "advisor-workflow" && tool && tool.id === "knowledge" && <KnowledgeExtractionWorkflow tool={tool} onBack={() => setPage("toolbox")} onComplete={(toolId) => {
         setPage("toolbox");
-      }} advisorData={advisorData} setAdvisorData={setAdvisorData} />}
+      }} advisorData={advisorData} setAdvisorData={setAdvisorDataWithSave} />}
       {page === "advisor-workflow" && tool && tool.id === "priority" && <PrioritySortingWorkflow tool={tool} onBack={() => setPage("toolbox")} onComplete={(toolId) => {
         setPage("toolbox");
-      }} advisorData={advisorData} setAdvisorData={setAdvisorData} />}
+      }} advisorData={advisorData} setAdvisorData={setAdvisorDataWithSave} />}
       {page === "export-report" && <ExportReportPage onBack={() => setPage("toolbox")} advisorData={advisorData} />}
     </>
   );
