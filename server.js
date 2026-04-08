@@ -73,6 +73,14 @@ app.get('/api/workshops/:id', (req, res) => {
     const leader = gm.find(m => m.is_leader);
     return { ...g, member_count: gm.length, leader_name: leader?.name || '' };
   });
+  
+  // Sort groups by group_code or name
+  groupsWithMeta.sort((a, b) => {
+    const codeA = a.group_code || a.name || '';
+    const codeB = b.group_code || b.name || '';
+    return codeA.localeCompare(codeB, undefined, { numeric: true, sensitivity: 'base' });
+  });
+
   res.json({ ...workshop, groups: groupsWithMeta });
 });
 
