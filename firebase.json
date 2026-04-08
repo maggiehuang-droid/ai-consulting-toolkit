@@ -1,0 +1,30 @@
+{
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "functions": [
+    {
+      "codebase": "ai-workshop",
+      "source": "functions"
+    }
+  ],
+  "hosting": {
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "public": "dist",
+    "rewrites": [
+      {
+        "function": "api",
+        "source": "/api/**"
+      },
+      {
+        "destination": "/index.html",
+        "source": "**"
+      }
+    ],
+    "site": "ai-consulting-toolkit"
+  }
+}
